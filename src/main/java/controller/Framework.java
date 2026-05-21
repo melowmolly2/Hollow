@@ -1,38 +1,31 @@
 package controller;
 
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
 import javafx.scene.layout.StackPane;
 
 import java.io.IOException;
-import java.util.Objects;
 
 public class Framework {
     @FXML private StackPane contentArea;
 
     @FXML public void dashboard() throws IOException {
-        loadTab("/fxml/dashboardTab.fxml");
+        SceneManager.changeContent("/fxml/dashboardTab.fxml");
     }
     @FXML public void browse(){
 
     }
-    @FXML public void mySale(){
-
+    @FXML public void mySale() throws IOException {
+        SceneManager.changeContent("/fxml/mySaleTab.fxml");
     }
     @FXML public void watchlist() throws IOException {
-        loadTab("/fxml/watchlistTab.fxml");
+        SceneManager.changeContent("/fxml/watchlistTab.fxml");
     }
     @FXML public void account(){
 
     }
 
     public void initialize() throws IOException {
-        loadTab("/fxml/dashboardTab.fxml");
-    }
-
-    private void loadTab(String fxml) throws IOException {
-        Parent view = FXMLLoader.load(Objects.requireNonNull(getClass().getResource(fxml)));
-        contentArea.getChildren().setAll(view);
+        SceneManager.setContentArea(contentArea);
+        SceneManager.changeContent("/fxml/dashboardTab.fxml");
     }
 }
