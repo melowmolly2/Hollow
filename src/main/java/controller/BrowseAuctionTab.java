@@ -23,6 +23,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Locale;
 
+// Note: Loads active auctions and handles simple page navigation.
 public class BrowseAuctionTab {
     private static final int PAGE_SIZE = 10;
 
@@ -62,6 +63,7 @@ public class BrowseAuctionTab {
 
     private void loadPage(int page) {
         setLoadingState(true, "Loading active auctions...");
+        // Note: API callback returns on a worker thread, so UI updates use Platform.runLater.
         ApiClient.api.getActiveItems(page, PAGE_SIZE).enqueue(new Callback<GetItemPagesResponse>() {
             @Override
             public void onResponse(Call<GetItemPagesResponse> call, Response<GetItemPagesResponse> response) {
@@ -102,6 +104,7 @@ public class BrowseAuctionTab {
 
     private void addCard(ItemResponse item) {
         try {
+            // Note: Each auction row is rendered from the shared card component.
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/card.fxml"));
             VBox card = loader.load();
             Card controller = loader.getController();
@@ -119,6 +122,7 @@ public class BrowseAuctionTab {
             return;
         }
 
+        // Note: Status is loaded separately so the list can render first.
         ApiClient.api.getItemStatus(itemId).enqueue(new Callback<ItemStatusGetResponse>() {
             @Override
             public void onResponse(Call<ItemStatusGetResponse> call, Response<ItemStatusGetResponse> response) {
@@ -158,6 +162,7 @@ public class BrowseAuctionTab {
             return "-";
         }
 
+        // Note: Backend stores end time as epoch milliseconds.
         long millisLeft = endTime - Instant.now().toEpochMilli();
         if (millisLeft <= 0) {
             return "Ended";

@@ -10,6 +10,7 @@ import service.AuthService;
 
 import java.io.IOException;
 
+// Note: Handles account creation from the register form.
 public class RegisterPage {
     @FXML private TextField username;
     @FXML private TextField displayName;
@@ -21,6 +22,7 @@ public class RegisterPage {
         SceneManager.changeScene(event, "/fxml/landingPage.fxml");
     }
     @FXML public void submit(){
+        // Note: Registration result is logged for now; no in-app message view yet.
         authService.register(username.getText(), displayName.getText(), password.getText(), new AuthMessageCallBack() {
             @Override
             public void onSuccess(String message) {

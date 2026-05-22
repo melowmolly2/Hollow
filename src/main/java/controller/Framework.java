@@ -5,6 +5,7 @@ import javafx.scene.layout.StackPane;
 
 import java.io.IOException;
 
+// Note: Main shell that swaps dashboard tabs inside one content area.
 public class Framework {
     @FXML private StackPane contentArea;
 
@@ -25,6 +26,7 @@ public class Framework {
     }
 
     public void initialize() throws IOException {
+        // Note: Register the shared content area before loading the first tab.
         SceneManager.setContentArea(contentArea);
         SceneManager.changeContent("/fxml/dashboardTab.fxml");
     }

@@ -11,6 +11,7 @@ import service.AuthService;
 
 import java.io.IOException;
 
+// Note: Handles login and opens the main app after success.
 public class LoginPage {
     @FXML private TextField username;
     @FXML private PasswordField password;
@@ -21,6 +22,7 @@ public class LoginPage {
         SceneManager.changeScene(event, "/fxml/landingPage.fxml");
     }
     @FXML public void submit(ActionEvent event){
+        // Note: Auth runs async; JavaFX UI changes stay on the UI thread.
         authService.login(username.getText(), password.getText(), new AuthCallback() {
             @Override
             public void onSuccess(AuthResponse response) {

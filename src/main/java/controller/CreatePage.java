@@ -10,6 +10,7 @@ import service.ItemService;
 
 import java.io.IOException;
 
+// Note: Form screen for publishing a new auction item.
 public class CreatePage {
     @FXML private TextField title;
     @FXML private TextArea description;
@@ -24,6 +25,7 @@ public class CreatePage {
         SceneManager.changeContent("/fxml/mySaleTab.fxml");
     }
     @FXML public void create(){
+        // Note: Raw form values are passed to the service; validation belongs there/backend.
         itemService.createItem(
                 title.getText(),
                 description.getText(),
@@ -34,6 +36,7 @@ public class CreatePage {
                 new ItemCallback() {
                     @Override
                     public void onSuccess(BaseItemResponse response) {
+                        // Note: Return to My Sale after the item is created.
                         Platform.runLater(() -> {
                             System.out.println("Created item: " + response.item.title);
                             try {

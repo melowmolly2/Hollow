@@ -5,6 +5,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import model.response.ItemResponse;
 
+// Note: Small reusable view for one auction item.
 public class Card {
     @FXML private Label itemLabel;
     @FXML private Label priceLabel;
@@ -19,6 +20,7 @@ public class Card {
     }
 
     public void setItem(ItemResponse item) {
+        // Note: Static item data is shown first; live status is filled later.
         itemId = item.itemId;
         itemLabel.setText("Item: " + valueOrFallback(item.title, "Untitled")
                 + " | ID " + item.itemId
@@ -29,6 +31,7 @@ public class Card {
     }
 
     public void setStatus(String price, String time, String info) {
+        // Note: Status text is kept simple for quick scanning.
         priceLabel.setText("Price: " + price);
         timeLabel.setText("Time: " + time);
         infoLabel.setText("Info: " + info);
