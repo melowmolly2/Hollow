@@ -1,6 +1,6 @@
 package service;
 
-public interface AuthMessageCallBack {
+public interface RegisterCallBack {
     void onSuccess(String message);
 
     void onError(String message);

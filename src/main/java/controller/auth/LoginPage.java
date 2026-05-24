@@ -1,12 +1,13 @@
-package controller;
+package controller.auth;
 
+import controller.SceneManager;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import model.response.AuthResponse;
-import service.AuthCallback;
+import service.LoginCallback;
 import service.AuthService;
 
 import java.io.IOException;
@@ -18,10 +19,10 @@ public class LoginPage {
     private final AuthService authService = new AuthService();
 
     @FXML public void back(ActionEvent event) throws IOException {
-        SceneManager.changeScene(event, "/fxml/landingPage.fxml");
+        SceneManager.changeScene(event, "/fxml/auth/landingPage.fxml");
     }
     @FXML public void submit(ActionEvent event){
-        authService.login(username.getText(), password.getText(), new AuthCallback() {
+        authService.login(username.getText(), password.getText(), new LoginCallback() {
             @Override
             public void onSuccess(AuthResponse response) {
                 Platform.runLater(() -> {

@@ -6,7 +6,7 @@ import javafx.stage.Stage;
 
 public class AuctionLauncher extends Application{
     public void start(Stage stage) throws Exception{
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/landingPage.fxml"));
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/auth/landingPage.fxml"));
         Parent root = loader.load();
         Scene scene = new Scene(root);
 

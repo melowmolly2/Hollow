@@ -11,7 +11,7 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 public class AuthService {
-    public void login(String username, String password, AuthCallback callback) {
+    public void login(String username, String password, LoginCallback callback) {
         if (username == null || username.isBlank()) {
             callback.onError("Username is empty");
             return;
@@ -44,7 +44,7 @@ public class AuthService {
         });
     }
 
-    public void register(String username, String displayName, String password, AuthMessageCallBack callback) {
+    public void register(String username, String displayName, String password, RegisterCallBack callback) {
         if (username == null || username.isBlank()) {
             callback.onError("Username is empty");
             return;
