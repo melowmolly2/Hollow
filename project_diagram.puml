@@ -1,0 +1,151 @@
+@startuml
+
+package "model" {
+    package "request" {
+        class BidPostRequest {
+            + Long itemId
+            + Double bidAmount
+        }
+        class LoginRequest {
+            + String username
+            + String password
+        }
+        class RegisterRequest {
+            + String username
+            + String displayName
+            + String password
+        }
+    }
+
+    package "response" {
+        class BaseResponse {
+            + boolean status
+            + String message
+        }
+        class AuthResponse {
+            + boolean status
+            + String message
+            + String accessToken
+            + String refreshToken
+        }
+        class BidPageResponse extends BaseResponse {
+            + PageResponse<BidResponse> entity
+        }
+        class BidPostResponse extends BaseResponse {
+            + BidResponse bid
+        }
+        class BidResponse {
+            + Long bidId
+            + Double bidAmount
+            + Long time
+        }
+        class GetItemPagesResponse extends BaseResponse {
+            + PageResponse<ItemResponse> pages
+        }
+        class ItemPageObjectResponse extends BaseResponse {
+            + PageResponse<ItemResponse> entity
+        }
+        class ItemStatusGetResponse extends BaseResponse {
+            + ItemStatusResponse itemStatus
+        }
+        class ItemStatusResponse {
+            + Long id
+            + Double currentPrice
+            + String highestBidUser
+            + Long startTime
+            + Long endTime
+        }
+        class PageResponse<T> {
+            + List<T> content
+            + int number
+            + int size
+            + int totalPages
+            + long totalElements
+        }
+    }
+}
+
+package "network" {
+    class ApiClient {
+        + {static} AuctionApi api
+    }
+    interface AuctionApi {
+        + Call<AuthResponse> login(LoginRequest)
+        + Call<BaseResponse> register(RegisterRequest)
+        + Call<BaseItemResponse> createItem(String)
+    }
+    class TokenStorage {
+        + {static} String accessToken
+        + {static} String refreshToken
+        + {static} String username
+    }
+}
+
+package "service" {
+    interface AuthCallback {
+        + void onSuccess(AuthResponse)
+        + void onError(String)
+    }
+    interface AuthMessageCallBack {
+        + void onSuccess(String)
+        + void onError(String)
+    }
+    class AuthService {
+        + void login(String, String, AuthCallback)
+    }
+}
+
+package "controller" {
+    package "auction" {
+        class AuctionViewContext {
+            + {static} ItemResponse selectedItem
+            + {static} Mode selectedMode
+        }
+        enum Mode {
+            BIDDER
+            SELLER
+        }
+        class BidderViewPage {}
+        class BrowseAuctionTab {}
+        class Card {}
+        class CreatePage {}
+        class MySaleTab {}
+        class SellerViewPage {}
+    }
+
+    package "auth" {
+        class LandingPage {}
+        class LoginPage {}
+        class RegisterPage {}
+    }
+
+    package "layout" {
+        class Framework {}
+    }
+
+    package "navigation" {
+        class SceneManager {
+            + {static} void changeScene(ActionEvent, String)
+        }
+    }
+}
+
+class AuctionLauncher {
+    + void start(Stage)
+}
+
+' Relationships
+controller.auth.LandingPage ..> controller.navigation.SceneManager
+controller.auth.LoginPage ..> controller.navigation.SceneManager
+controller.auth.RegisterPage ..> controller.navigation.SceneManager
+controller.layout.Framework ..> controller.navigation.SceneManager
+controller.auction.CreatePage ..> controller.navigation.SceneManager
+
+controller.auth.LoginPage o-- service.AuthService
+controller.auth.RegisterPage o-- service.AuthService
+
+network.ApiClient ..> network.AuctionApi
+
+service.AuthService ..> service.AuthCallback
+
+@enduml
