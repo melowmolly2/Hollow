@@ -1,6 +1,7 @@
 package service.auth;
 
 import dto.auth.LoginRequest;
+import dto.auth.RefreshTokenRequest;
 import dto.auth.RegisterRequest;
 import dto.auth.AuthResponse;
 import dto.common.BaseResponse;
@@ -11,6 +12,35 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 public class AuthService {
+    public void refreshToken(TokenRefreshCallback callback) {
+        if (TokenStorage.refreshToken == null || TokenStorage.refreshToken.isBlank()) {
+            callback.onError("Session expired. Please login again.");
+            return;
+        }
+
+        RefreshTokenRequest request = new RefreshTokenRequest(TokenStorage.refreshToken);
+        ApiClient.api.refresh(request).enqueue(new Callback<AuthResponse>() {
+            @Override
+            public void onResponse(Call<AuthResponse> call, Response<AuthResponse> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    AuthResponse auth = response.body();
+                    TokenStorage.accessToken = auth.accessToken;
+                    TokenStorage.refreshToken = auth.refreshToken;
+                    callback.onSuccess();
+                    return;
+                }
+
+                clearTokens();
+                callback.onError("Session expired. Please login again.");
+            }
+
+            @Override
+            public void onFailure(Call<AuthResponse> call, Throwable throwable) {
+                callback.onError("Network error: " + throwable.getMessage());
+            }
+        });
+    }
+
     public void login(String username, String password, LoginCallback callback) {
         if (username == null || username.isBlank()) {
             callback.onError("Username is empty");
@@ -78,5 +108,11 @@ public class AuthService {
                 callback.onError("Network error: " + throwable.getMessage());
             }
         });
+    }
+
+    private void clearTokens() {
+        TokenStorage.accessToken = null;
+        TokenStorage.refreshToken = null;
+        TokenStorage.username = null;
     }
 }

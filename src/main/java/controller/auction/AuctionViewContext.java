@@ -1,6 +1,6 @@
 package controller.auction;
 
-import model.response.ItemResponse;
+import dto.auction.ItemResponse;
 
 // Note: Small hand-off object for opening detail pages from list cards.
 public class AuctionViewContext {

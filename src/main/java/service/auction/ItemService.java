@@ -8,11 +8,15 @@ import dto.auction.SellerListingResponse;
 import dto.common.BaseResponse;
 import network.ApiClient;
 import model.TokenStorage;
+import service.auth.AuthService;
+import service.auth.TokenRefreshCallback;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
 public class ItemService {
+    private final AuthService authService = new AuthService();
+
     public void getSellerListings(String username, int page, int size, SellerListingCallback callback) {
         if (username == null || username.isBlank()) {
             callback.onError("Missing username");
@@ -38,6 +42,10 @@ public class ItemService {
     }
 
     public void cancelItem(Long itemId, BaseResponseCallback callback) {
+        cancelItem(itemId, callback, true);
+    }
+
+    private void cancelItem(Long itemId, BaseResponseCallback callback, boolean allowRefresh) {
         if (TokenStorage.accessToken == null || TokenStorage.accessToken.isBlank()) {
             callback.onError("You must login first");
             return;
@@ -54,6 +62,11 @@ public class ItemService {
             public void onResponse(Call<BaseResponse> call, Response<BaseResponse> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     callback.onSuccess(response.body());
+                    return;
+                }
+
+                if (response.code() == 401 && allowRefresh) {
+                    refreshThen(() -> cancelItem(itemId, callback, false), callback::onError);
                     return;
                 }
 
@@ -75,6 +88,19 @@ public class ItemService {
             String bidIncrementText,
             String buyItNowPriceText,
             ItemCallback callback
+    ) {
+        createItem(title, description, durationMinutesText, startingPriceText, bidIncrementText, buyItNowPriceText, callback, true);
+    }
+
+    private void createItem(
+            String title,
+            String description,
+            String durationMinutesText,
+            String startingPriceText,
+            String bidIncrementText,
+            String buyItNowPriceText,
+            ItemCallback callback,
+            boolean allowRefresh
     ) {
         if (TokenStorage.accessToken == null || TokenStorage.accessToken.isBlank()) {
             callback.onError("You must login first");
@@ -136,12 +162,35 @@ public class ItemService {
                     return;
                 }
 
+                if (response.code() == 401 && allowRefresh) {
+                    refreshThen(
+                            () -> createItem(title, description, durationMinutesText, startingPriceText,
+                                    bidIncrementText, buyItNowPriceText, callback, false),
+                            callback::onError
+                    );
+                    return;
+                }
+
                 callback.onError("Create item failed. HTTP code: " + response.code());
             }
 
             @Override
             public void onFailure(Call<BaseItemResponse> call, Throwable throwable) {
                 callback.onError("Network error: " + throwable.getMessage());
+            }
+        });
+    }
+
+    private void refreshThen(Runnable onSuccess, java.util.function.Consumer<String> onError) {
+        authService.refreshToken(new TokenRefreshCallback() {
+            @Override
+            public void onSuccess() {
+                onSuccess.run();
+            }
+
+            @Override
+            public void onError(String message) {
+                onError.accept(message);
             }
         });
     }

@@ -33,6 +33,12 @@ public class Card {
         timeLabel.setText("Time: loading...");
     }
 
+    public void setStatus(String price, String time, String info) {
+        priceLabel.setText("Price: " + price);
+        timeLabel.setText("Time: " + time);
+        infoLabel.setText("Info: " + info);
+    }
+
     @FXML
     public void seeDetails() {
         if (item == null) {

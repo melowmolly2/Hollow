@@ -43,9 +43,11 @@ public class BidderViewPage {
     private final DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
     private ItemResponse item;
+    private volatile boolean active;
 
     public void setItem(ItemResponse item) {
         this.item = item;
+        active = true;
         titleLabel.setText(item.title);
         descriptionLabel.setText(item.description);
         loadItemStatus();
@@ -54,6 +56,7 @@ public class BidderViewPage {
 
     @FXML
     public void back() throws IOException {
+        active = false;
         priceStreamListener.stop();
         SceneManager.changeContent("/fxml/browseTab.fxml");
     }
@@ -69,16 +72,23 @@ public class BidderViewPage {
             @Override
             public void onSuccess(BidPostResponse response) {
                 Platform.runLater(() -> {
+                    if (!active) {
+                        return;
+                    }
                     bidAmountField.clear();
                     AppPopup.info(response.message);
                 });
-                loadItemStatus();
-                refreshBalance();
+                if (active) {
+                    loadItemStatus();
+                    refreshBalance();
+                }
             }
 
             @Override
             public void onError(String message) {
-                AppPopup.error(message);
+                if (active) {
+                    AppPopup.error(message);
+                }
             }
         });
     }
@@ -91,12 +101,18 @@ public class BidderViewPage {
         itemService.getItemStatus(item.itemId, new ItemStatusCallback() {
             @Override
             public void onSuccess(ItemStatusResponse response) {
-                Platform.runLater(() -> renderStatus(response.itemStatus));
+                Platform.runLater(() -> {
+                    if (active) {
+                        renderStatus(response.itemStatus);
+                    }
+                });
             }
 
             @Override
             public void onError(String message) {
-                AppPopup.error(message);
+                if (active) {
+                    AppPopup.error(message);
+                }
             }
         });
     }
@@ -105,12 +121,18 @@ public class BidderViewPage {
         accountService.getBalance(new BalanceCallback() {
             @Override
             public void onSuccess(BalanceResponse response) {
-                Platform.runLater(() -> AccountSession.setBalance(response.balance));
+                Platform.runLater(() -> {
+                    if (active) {
+                        AccountSession.setBalance(response.balance);
+                    }
+                });
             }
 
             @Override
             public void onError(String message) {
-                AppPopup.error(message);
+                if (active) {
+                    AppPopup.error(message);
+                }
             }
         });
     }
@@ -121,6 +143,9 @@ public class BidderViewPage {
         }
 
         priceStreamListener.start(item.itemId, price -> {
+            if (!active) {
+                return;
+            }
             currentPriceLabel.setText("Current price: " + formatMoney(price));
             loadItemStatus();
             refreshBalance();

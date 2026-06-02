@@ -6,13 +6,10 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Label;
 import javafx.scene.control.Button;
 import javafx.scene.layout.VBox;
-import model.response.GetItemPagesResponse;
-import model.response.ItemResponse;
-import model.response.ItemStatusGetResponse;
-import model.response.ItemStatusResponse;
-import model.response.PageResponse;
+import dto.auction.GetItemPageResponse;
+import dto.auction.ItemResponse;
+import dto.auction.ItemStatusResponse;
 import network.ApiClient;
-import controller.navigation.SceneManager;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -65,9 +62,9 @@ public class BrowseAuctionTab {
     private void loadPage(int page) {
         setLoadingState(true, "Loading active auctions...");
         // Note: API callback returns on a worker thread, so UI updates use Platform.runLater.
-        ApiClient.api.getActiveItems(page, PAGE_SIZE).enqueue(new Callback<GetItemPagesResponse>() {
+        ApiClient.api.getItems(page, PAGE_SIZE).enqueue(new Callback<GetItemPageResponse>() {
             @Override
-            public void onResponse(Call<GetItemPagesResponse> call, Response<GetItemPagesResponse> response) {
+            public void onResponse(Call<GetItemPageResponse> call, Response<GetItemPageResponse> response) {
                 if (!response.isSuccessful() || response.body() == null || response.body().pages == null) {
                     Platform.runLater(() -> showError("Cannot load auctions. HTTP " + response.code()));
                     return;
@@ -77,13 +74,13 @@ public class BrowseAuctionTab {
             }
 
             @Override
-            public void onFailure(Call<GetItemPagesResponse> call, Throwable throwable) {
+            public void onFailure(Call<GetItemPageResponse> call, Throwable throwable) {
                 Platform.runLater(() -> showError("Network error: " + throwable.getMessage()));
             }
         });
     }
 
-    private void renderPage(PageResponse<ItemResponse> page) {
+    private void renderPage(GetItemPageResponse.PageData page) {
         currentPage = page.number;
         totalPages = page.totalPages;
         cardList.getChildren().clear();
@@ -92,7 +89,7 @@ public class BrowseAuctionTab {
         if (items == null || items.isEmpty()) {
             statusLabel.setText("No active auctions found.");
         } else {
-            statusLabel.setText(page.totalElements + " active auctions");
+            statusLabel.setText(items.size() + " active auctions");
             for (ItemResponse item : items) {
                 addCard(item);
             }
@@ -110,7 +107,6 @@ public class BrowseAuctionTab {
             VBox card = loader.load();
             Card controller = loader.getController();
             controller.setItem(item);
-            controller.setViewAction(() -> openBidderView(item));
             cardList.getChildren().add(card);
             loadStatus(item.itemId, controller);
         } catch (IOException exception) {
@@ -119,13 +115,8 @@ public class BrowseAuctionTab {
     }
 
     private void openBidderView(ItemResponse item) {
-        try {
-            AuctionViewContext.selectedItem = item;
-            AuctionViewContext.selectedMode = AuctionViewContext.Mode.BIDDER;
-            SceneManager.changeContent("/fxml/bidderViewPage.fxml");
-        } catch (IOException exception) {
-            statusLabel.setText("Cannot open auction view.");
-        }
+        AuctionViewContext.selectedItem = item;
+        AuctionViewContext.selectedMode = AuctionViewContext.Mode.BIDDER;
     }
 
     private void loadStatus(Long itemId, Card card) {
@@ -135,21 +126,21 @@ public class BrowseAuctionTab {
         }
 
         // Note: Status is loaded separately so the list can render first.
-        ApiClient.api.getItemStatus(itemId).enqueue(new Callback<ItemStatusGetResponse>() {
+        ApiClient.api.getItemStatus(itemId).enqueue(new Callback<ItemStatusResponse>() {
             @Override
-            public void onResponse(Call<ItemStatusGetResponse> call, Response<ItemStatusGetResponse> response) {
-                ItemStatusResponse itemStatus = response.body() == null ? null : response.body().itemStatus;
+            public void onResponse(Call<ItemStatusResponse> call, Response<ItemStatusResponse> response) {
+                ItemStatusResponse.ItemStatusData itemStatus = response.body() == null ? null : response.body().itemStatus;
                 Platform.runLater(() -> updateStatusLabels(card, itemStatus));
             }
 
             @Override
-            public void onFailure(Call<ItemStatusGetResponse> call, Throwable throwable) {
+            public void onFailure(Call<ItemStatusResponse> call, Throwable throwable) {
                 Platform.runLater(() -> updateStatusLabels(card, null));
             }
         });
     }
 
-    private void updateStatusLabels(Card card, ItemStatusResponse status) {
+    private void updateStatusLabels(Card card, ItemStatusResponse.ItemStatusData status) {
         if (status == null) {
             card.setStatus("unavailable", "unavailable", "unavailable");
             return;

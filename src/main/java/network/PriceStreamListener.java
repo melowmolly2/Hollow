@@ -14,16 +14,17 @@ public class PriceStreamListener {
     private volatile boolean running;
     private HttpURLConnection connection;
 
-    public void start(Long itemId, Consumer<Double> onPrice) {
+    public synchronized void start(Long itemId, Consumer<Double> onPrice) {
         stop();
 
         running = true;
         thread = new Thread(() -> listen(itemId, onPrice));
         thread.setDaemon(true);
+        thread.setName("price-stream-" + itemId);
         thread.start();
     }
 
-    public void stop() {
+    public synchronized void stop() {
         running = false;
 
         if (connection != null) {
@@ -31,23 +32,25 @@ public class PriceStreamListener {
             connection = null;
         }
 
-        if (thread != null) {
+        if (thread != null && thread != Thread.currentThread()) {
             thread.interrupt();
-            thread = null;
         }
+        thread = null;
     }
 
     private void listen(Long itemId, Consumer<Double> onPrice) {
+        HttpURLConnection activeConnection = null;
         try {
             URL url = new URL("http://localhost:8080/items/stream/" + itemId);
-            connection = (HttpURLConnection) url.openConnection();
-            connection.setRequestMethod("GET");
-            connection.setRequestProperty("Accept", "text/event-stream");
-            connection.setConnectTimeout(5000);
-            connection.setReadTimeout(0);
+            activeConnection = (HttpURLConnection) url.openConnection();
+            connection = activeConnection;
+            activeConnection.setRequestMethod("GET");
+            activeConnection.setRequestProperty("Accept", "text/event-stream");
+            activeConnection.setConnectTimeout(5000);
+            activeConnection.setReadTimeout(0);
 
             try (BufferedReader reader = new BufferedReader(
-                    new InputStreamReader(connection.getInputStream())
+                    new InputStreamReader(activeConnection.getInputStream())
             )) {
                 String line;
                 while (running && (line = reader.readLine()) != null) {
@@ -56,7 +59,17 @@ public class PriceStreamListener {
             }
         } catch (IOException ignored) {
         } finally {
-            stop();
+            if (activeConnection != null) {
+                activeConnection.disconnect();
+            }
+            synchronized (this) {
+                if (connection == activeConnection) {
+                    connection = null;
+                }
+                if (thread == Thread.currentThread()) {
+                    thread = null;
+                }
+            }
         }
     }
 
@@ -68,7 +81,11 @@ public class PriceStreamListener {
         String value = line.substring("data:".length()).trim();
         try {
             double price = Double.parseDouble(value);
-            Platform.runLater(() -> onPrice.accept(price));
+            Platform.runLater(() -> {
+                if (running) {
+                    onPrice.accept(price);
+                }
+            });
         } catch (NumberFormatException ignored) {
         }
     }

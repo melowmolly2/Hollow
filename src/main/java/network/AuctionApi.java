@@ -11,6 +11,7 @@ import dto.account.DepositRequest;
 import dto.account.BalanceResponse;
 import dto.auth.AuthResponse;
 import dto.auth.LoginRequest;
+import dto.auth.RefreshTokenRequest;
 import dto.auction.PublishItemRequest;
 import dto.auth.RegisterRequest;
 import dto.common.BaseResponse;
@@ -23,6 +24,9 @@ public interface AuctionApi {
 
     @POST("/register")
     Call<BaseResponse> register(@Body RegisterRequest request);
+
+    @POST("/refresh")
+    Call<AuthResponse> refresh(@Body RefreshTokenRequest request);
 
     @POST("/items")
     Call<BaseItemResponse> createItem(

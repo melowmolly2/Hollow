@@ -8,6 +8,8 @@ import dto.auction.BidHistoryResponse;
 import model.TokenStorage;
 import network.ApiClient;
 import okhttp3.ResponseBody;
+import service.auth.AuthService;
+import service.auth.TokenRefreshCallback;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -15,6 +17,8 @@ import retrofit2.Response;
 import java.io.IOException;
 
 public class BidService {
+    private final AuthService authService = new AuthService();
+
     public void getBidHistory(Long itemId, int page, int size, BidHistoryCallback callback) {
         if (itemId == null) {
             callback.onError("Missing item id");
@@ -40,6 +44,10 @@ public class BidService {
     }
 
     public void placeBid(Long itemId, String bidAmountText, BidCallback callback) {
+        placeBid(itemId, bidAmountText, callback, true);
+    }
+
+    private void placeBid(Long itemId, String bidAmountText, BidCallback callback, boolean allowRefresh) {
         if (TokenStorage.accessToken == null || TokenStorage.accessToken.isBlank()) {
             callback.onError("You must login first");
             return;
@@ -74,12 +82,31 @@ public class BidService {
                     return;
                 }
 
+                if (response.code() == 401 && allowRefresh) {
+                    refreshThen(() -> placeBid(itemId, bidAmountText, callback, false), callback::onError);
+                    return;
+                }
+
                 callback.onError(errorMessage(response, "Bid failed"));
             }
 
             @Override
             public void onFailure(Call<BidPostResponse> call, Throwable throwable) {
                 callback.onError("Network error: " + throwable.getMessage());
+            }
+        });
+    }
+
+    private void refreshThen(Runnable onSuccess, java.util.function.Consumer<String> onError) {
+        authService.refreshToken(new TokenRefreshCallback() {
+            @Override
+            public void onSuccess() {
+                onSuccess.run();
+            }
+
+            @Override
+            public void onError(String message) {
+                onError.accept(message);
             }
         });
     }

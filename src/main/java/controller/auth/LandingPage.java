@@ -3,7 +3,6 @@ package controller.auth;
 import controller.app.SceneManager;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import controller.navigation.SceneManager;
 
 import java.io.IOException;
 
