@@ -123,6 +123,7 @@ public class BidderViewPage {
         priceStreamListener.start(item.itemId, price -> {
             currentPriceLabel.setText("Current price: " + formatMoney(price));
             loadItemStatus();
+            refreshBalance();
         });
     }
 

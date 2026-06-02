@@ -4,6 +4,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import dto.auction.BidPostRequest;
 import dto.auction.BidPostResponse;
+import dto.auction.BidHistoryResponse;
 import model.TokenStorage;
 import network.ApiClient;
 import okhttp3.ResponseBody;
@@ -14,6 +15,30 @@ import retrofit2.Response;
 import java.io.IOException;
 
 public class BidService {
+    public void getBidHistory(Long itemId, int page, int size, BidHistoryCallback callback) {
+        if (itemId == null) {
+            callback.onError("Missing item id");
+            return;
+        }
+
+        ApiClient.api.getBidHistory(itemId, page, size).enqueue(new Callback<BidHistoryResponse>() {
+            @Override
+            public void onResponse(Call<BidHistoryResponse> call, Response<BidHistoryResponse> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    callback.onSuccess(response.body());
+                    return;
+                }
+
+                callback.onError(errorMessage(response, "Get bid history failed"));
+            }
+
+            @Override
+            public void onFailure(Call<BidHistoryResponse> call, Throwable throwable) {
+                callback.onError("Network error: " + throwable.getMessage());
+            }
+        });
+    }
+
     public void placeBid(Long itemId, String bidAmountText, BidCallback callback) {
         if (TokenStorage.accessToken == null || TokenStorage.accessToken.isBlank()) {
             callback.onError("You must login first");
@@ -49,7 +74,7 @@ public class BidService {
                     return;
                 }
 
-                callback.onError(errorMessage(response));
+                callback.onError(errorMessage(response, "Bid failed"));
             }
 
             @Override
@@ -59,13 +84,13 @@ public class BidService {
         });
     }
 
-    private String errorMessage(Response<?> response) {
+    private String errorMessage(Response<?> response, String fallback) {
         String message = readMessage(response.errorBody());
         if (message != null && !message.isBlank()) {
             return message;
         }
 
-        return "Bid failed. HTTP code: " + response.code();
+        return fallback + ". HTTP code: " + response.code();
     }
 
     private String readMessage(ResponseBody errorBody) {

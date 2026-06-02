@@ -6,18 +6,16 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.Separator?>
 <?import javafx.scene.control.TextField?>
-<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Priority?>
 <?import javafx.scene.layout.Region?>
-<?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.VBox?>
 
 <VBox prefHeight="560.0"
       prefWidth="760.0"
-      spacing="16.0"
+      spacing="14.0"
       style="-fx-background-color: transparent;"
       xmlns="http://javafx.com/javafx/25"
       xmlns:fx="http://javafx.com/fxml/1"
@@ -48,128 +46,118 @@
          </children>
       </HBox>
 
-      <GridPane hgap="16.0" vgap="16.0" VBox.vgrow="ALWAYS">
-         <columnConstraints>
-            <ColumnConstraints hgrow="ALWAYS" minWidth="260.0" percentWidth="58.0" />
-            <ColumnConstraints hgrow="ALWAYS" minWidth="230.0" percentWidth="42.0" />
-         </columnConstraints>
-         <rowConstraints>
-            <RowConstraints minHeight="250.0" vgrow="ALWAYS" />
-            <RowConstraints minHeight="150.0" vgrow="SOMETIMES" />
-         </rowConstraints>
+      <VBox spacing="14.0" VBox.vgrow="ALWAYS">
          <children>
-            <VBox spacing="12.0"
-                  style="-fx-background-color: white; -fx-background-radius: 8; -fx-border-color: #e5e7eb; -fx-border-radius: 8; -fx-padding: 16;"
-                  GridPane.columnIndex="0"
-                  GridPane.rowIndex="0">
+            <HBox spacing="14.0">
                <children>
-                  <ImageView fitHeight="210.0"
-                             fitWidth="420.0"
-                             pickOnBounds="true"
-                             preserveRatio="false"
-                             style="-fx-background-color: #eef0f3;" />
-                  <Label text="Description"
-                         style="-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #374151;" />
-                  <Label fx:id="descriptionLabel"
-                         text="Description"
-                         wrapText="true"
-                         style="-fx-font-size: 13px; -fx-text-fill: #4b5563;" />
-               </children>
-            </VBox>
+                  <VBox spacing="8.0" HBox.hgrow="ALWAYS"
+                        style="-fx-background-color: white; -fx-background-radius: 8; -fx-border-color: #e5e7eb; -fx-border-radius: 8; -fx-padding: 16;">
+                     <children>
+                        <Label text="Current price"
+                               style="-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #6b7280;" />
+                        <Label fx:id="currentPriceLabel"
+                               text="Current price"
+                               wrapText="true"
+                               style="-fx-font-size: 26px; -fx-font-weight: bold; -fx-text-fill: #1f6f43;" />
+                        <Label fx:id="highestBidderLabel"
+                               text="Highest bidder"
+                               wrapText="true"
+                               style="-fx-font-size: 13px; -fx-text-fill: #6b7280;" />
+                     </children>
+                  </VBox>
 
-            <VBox spacing="13.0"
-                  style="-fx-background-color: white; -fx-background-radius: 8; -fx-border-color: #e5e7eb; -fx-border-radius: 8; -fx-padding: 16;"
-                  GridPane.columnIndex="1"
-                  GridPane.rowIndex="0">
-               <children>
-                  <Label text="Place bid"
-                         style="-fx-font-size: 17px; -fx-font-weight: bold; -fx-text-fill: #111827;" />
-                  <Label fx:id="currentPriceLabel"
-                         text="Current price"
-                         wrapText="true"
-                         style="-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #1f6f43;" />
-                  <Label fx:id="highestBidderLabel"
-                         text="Highest bidder"
-                         wrapText="true"
-                         style="-fx-font-size: 13px; -fx-text-fill: #6b7280;" />
-                  <Separator />
-                  <Label fx:id="minimumBidLabel"
-                         text="Your new bid:"
-                         wrapText="true"
-                         style="-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #374151;" />
-                  <TextField fx:id="bidAmountField"
-                             promptText="Bid amount"
-                             style="-fx-background-radius: 5; -fx-padding: 10 11;" />
-                  <Button maxWidth="Infinity"
-                          mnemonicParsing="false"
-                          onAction="#confirmBid"
-                          text="Confirm bid"
-                          style="-fx-background-color: #1f6f43; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5; -fx-padding: 10 14;" />
-                  <Region VBox.vgrow="ALWAYS" />
-                  <Label text="Your last bid:"
-                         style="-fx-font-size: 12px; -fx-text-fill: #9ca3af;" />
+                  <VBox spacing="8.0" HBox.hgrow="ALWAYS"
+                        style="-fx-background-color: white; -fx-background-radius: 8; -fx-border-color: #e5e7eb; -fx-border-radius: 8; -fx-padding: 16;">
+                     <children>
+                        <Label text="Place bid"
+                               style="-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #111827;" />
+                        <Label fx:id="minimumBidLabel"
+                               text="Your new bid:"
+                               wrapText="true"
+                               style="-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #374151;" />
+                        <HBox spacing="10.0">
+                           <children>
+                              <TextField fx:id="bidAmountField"
+                                         promptText="Bid amount"
+                                         HBox.hgrow="ALWAYS"
+                                         style="-fx-background-radius: 5; -fx-padding: 10 11;" />
+                              <Button mnemonicParsing="false"
+                                      onAction="#confirmBid"
+                                      text="Confirm"
+                                      style="-fx-background-color: #1f6f43; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5; -fx-padding: 10 14;" />
+                           </children>
+                        </HBox>
+                        <Label text="Your last bid:"
+                               style="-fx-font-size: 12px; -fx-text-fill: #9ca3af;" />
+                     </children>
+                  </VBox>
                </children>
-            </VBox>
+            </HBox>
 
             <VBox spacing="10.0"
-                  style="-fx-background-color: white; -fx-background-radius: 8; -fx-border-color: #e5e7eb; -fx-border-radius: 8; -fx-padding: 16;"
-                  GridPane.columnIndex="0"
-                  GridPane.rowIndex="1">
+                  style="-fx-background-color: white; -fx-background-radius: 8; -fx-border-color: #e5e7eb; -fx-border-radius: 8; -fx-padding: 16;">
                <children>
                   <Label text="Auction information"
                          style="-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #111827;" />
                   <GridPane hgap="16.0" vgap="8.0">
                      <columnConstraints>
-                        <ColumnConstraints hgrow="ALWAYS" percentWidth="50.0" />
-                        <ColumnConstraints hgrow="ALWAYS" percentWidth="50.0" />
+                        <ColumnConstraints hgrow="ALWAYS" percentWidth="25.0" />
+                        <ColumnConstraints hgrow="ALWAYS" percentWidth="25.0" />
+                        <ColumnConstraints hgrow="ALWAYS" percentWidth="25.0" />
+                        <ColumnConstraints hgrow="ALWAYS" percentWidth="25.0" />
                      </columnConstraints>
                      <children>
-                        <Label fx:id="startingPriceLabel"
-                               text="Starting price"
-                               wrapText="true"
-                               style="-fx-text-fill: #4b5563;"
-                               GridPane.columnIndex="0"
-                               GridPane.rowIndex="0" />
-                        <Label fx:id="bidIncrementLabel"
-                               text="Bid increment"
-                               wrapText="true"
-                               style="-fx-text-fill: #4b5563;"
-                               GridPane.columnIndex="1"
-                               GridPane.rowIndex="0" />
-                        <Label fx:id="startTimeLabel"
-                               text="Start time"
-                               wrapText="true"
-                               style="-fx-text-fill: #4b5563;"
-                               GridPane.columnIndex="0"
-                               GridPane.rowIndex="1" />
-                        <Label fx:id="endTimeLabel"
-                               text="End time"
-                               wrapText="true"
-                               style="-fx-text-fill: #4b5563;"
-                               GridPane.columnIndex="1"
-                               GridPane.rowIndex="1" />
+                        <Label fx:id="startingPriceLabel" text="Starting price" wrapText="true" style="-fx-text-fill: #4b5563;" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+                        <Label fx:id="bidIncrementLabel" text="Bid increment" wrapText="true" style="-fx-text-fill: #4b5563;" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+                        <Label fx:id="startTimeLabel" text="Start time" wrapText="true" style="-fx-text-fill: #4b5563;" GridPane.columnIndex="2" GridPane.rowIndex="0" />
+                        <Label fx:id="endTimeLabel" text="End time" wrapText="true" style="-fx-text-fill: #4b5563;" GridPane.columnIndex="3" GridPane.rowIndex="0" />
                      </children>
                   </GridPane>
                </children>
             </VBox>
 
-            <VBox spacing="9.0"
-                  style="-fx-background-color: white; -fx-background-radius: 8; -fx-border-color: #e5e7eb; -fx-border-radius: 8; -fx-padding: 16;"
-                  GridPane.columnIndex="1"
-                  GridPane.rowIndex="1">
+            <GridPane hgap="14.0" vgap="14.0" VBox.vgrow="ALWAYS">
+               <columnConstraints>
+                  <ColumnConstraints hgrow="ALWAYS" minWidth="350.0" percentWidth="62.0" />
+                  <ColumnConstraints hgrow="ALWAYS" minWidth="220.0" percentWidth="38.0" />
+               </columnConstraints>
                <children>
-                  <Label text="Auto-bidding"
-                         style="-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #111827;" />
-                  <CheckBox mnemonicParsing="false"
-                            text="Enable auto-bidding"
-                            style="-fx-text-fill: #374151;" />
-                  <TextField promptText="Max bid"
-                             style="-fx-background-radius: 5; -fx-padding: 8 10;" />
-                  <TextField promptText="Increment"
-                             style="-fx-background-radius: 5; -fx-padding: 8 10;" />
+                  <VBox spacing="10.0"
+                        style="-fx-background-color: white; -fx-background-radius: 8; -fx-border-color: #e5e7eb; -fx-border-radius: 8; -fx-padding: 16;"
+                        GridPane.columnIndex="0"
+                        GridPane.rowIndex="0">
+                     <children>
+                        <Label text="Description"
+                               style="-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #111827;" />
+                        <Separator />
+                        <Label fx:id="descriptionLabel"
+                               text="Description"
+                               wrapText="true"
+                               style="-fx-font-size: 13px; -fx-text-fill: #4b5563;" />
+                        <Region VBox.vgrow="ALWAYS" />
+                     </children>
+                  </VBox>
+
+                  <VBox spacing="9.0"
+                        style="-fx-background-color: white; -fx-background-radius: 8; -fx-border-color: #e5e7eb; -fx-border-radius: 8; -fx-padding: 16;"
+                        GridPane.columnIndex="1"
+                        GridPane.rowIndex="0">
+                     <children>
+                        <Label text="Auto-bidding"
+                               style="-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #111827;" />
+                        <CheckBox mnemonicParsing="false"
+                                  text="Enable auto-bidding"
+                                  style="-fx-text-fill: #374151;" />
+                        <TextField promptText="Max bid"
+                                   style="-fx-background-radius: 5; -fx-padding: 8 10;" />
+                        <TextField promptText="Increment"
+                                   style="-fx-background-radius: 5; -fx-padding: 8 10;" />
+                        <Region VBox.vgrow="ALWAYS" />
+                     </children>
+                  </VBox>
                </children>
-            </VBox>
+            </GridPane>
          </children>
-      </GridPane>
+      </VBox>
    </children>
 </VBox>

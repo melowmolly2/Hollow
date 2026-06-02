@@ -2,15 +2,18 @@
 
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Separator?>
 <?import javafx.scene.control.TextArea?>
 <?import javafx.scene.control.TextField?>
-<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.VBox?>
 
 <VBox prefHeight="560.0" prefWidth="760.0"
-      spacing="16.0"
+      spacing="14.0"
       style="-fx-background-color: transparent;"
       xmlns="http://javafx.com/javafx/25"
       xmlns:fx="http://javafx.com/fxml/1"
@@ -20,53 +23,94 @@
          <children>
             <Button mnemonicParsing="false" onAction="#back" text="Back"
                     style="-fx-background-radius: 5; -fx-padding: 7 13;" />
-            <Label text="Create Auction"
-                   style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #111827;" />
+            <VBox spacing="2.0" HBox.hgrow="ALWAYS">
+               <children>
+                  <Label text="Create Auction"
+                         style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #111827;" />
+                  <Label text="Create a listing by entering item details and auction terms."
+                         style="-fx-font-size: 12px; -fx-text-fill: #6b7280;" />
+               </children>
+            </VBox>
          </children>
       </HBox>
-      <GridPane hgap="18.0" vgap="14.0">
+
+      <VBox spacing="14.0"
+            style="-fx-background-color: white; -fx-background-radius: 10; -fx-border-color: #e5e7eb; -fx-border-radius: 10; -fx-padding: 20;"
+            VBox.vgrow="ALWAYS">
          <children>
-            <VBox spacing="12.0"
-                  style="-fx-background-color: white; -fx-background-radius: 8; -fx-border-color: #e5e7eb; -fx-border-radius: 8; -fx-padding: 18;"
-                  GridPane.columnIndex="0" GridPane.rowIndex="0">
+            <Label text="Item details"
+                   style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #111827;" />
+
+            <GridPane hgap="14.0" vgap="8.0">
+               <columnConstraints>
+                  <ColumnConstraints hgrow="ALWAYS" minWidth="120.0" percentWidth="100.0" />
+               </columnConstraints>
                <children>
-                  <Label text="Item details"
-                         style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #111827;" />
-                  <ImageView fitHeight="140.0" fitWidth="310.0" pickOnBounds="true" preserveRatio="false" />
-                  <Button mnemonicParsing="false" text="Upload image"
-                          style="-fx-background-radius: 5; -fx-padding: 8 13;" />
-                  <Label text="Title" style="-fx-text-fill: #4b5563;" />
+                  <Label text="Title" style="-fx-text-fill: #4b5563;" GridPane.rowIndex="0" />
                   <TextField fx:id="title" promptText="Auction title"
-                             style="-fx-background-radius: 5; -fx-padding: 9 11;" />
-                  <Label text="Description" style="-fx-text-fill: #4b5563;" />
-                  <TextArea fx:id="description" prefHeight="100.0" promptText="Describe your item"
-                            wrapText="true"
-                            style="-fx-background-radius: 5;" />
+                             style="-fx-background-radius: 5; -fx-padding: 9 11;"
+                             GridPane.rowIndex="1" />
                </children>
-            </VBox>
-            <VBox spacing="12.0"
-                  style="-fx-background-color: white; -fx-background-radius: 8; -fx-border-color: #e5e7eb; -fx-border-radius: 8; -fx-padding: 18;"
-                  GridPane.columnIndex="1" GridPane.rowIndex="0">
+            </GridPane>
+
+            <GridPane hgap="14.0" vgap="8.0" VBox.vgrow="ALWAYS">
+               <columnConstraints>
+                  <ColumnConstraints hgrow="ALWAYS" minWidth="120.0" percentWidth="100.0" />
+               </columnConstraints>
+               <rowConstraints>
+                  <RowConstraints vgrow="NEVER" />
+                  <RowConstraints vgrow="ALWAYS" />
+               </rowConstraints>
                <children>
-                  <Label text="Auction terms"
-                         style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #111827;" />
-                  <Label text="Duration in minutes" style="-fx-text-fill: #4b5563;" />
-                  <TextField fx:id="endTime" promptText="Example: 60"
-                             style="-fx-background-radius: 5; -fx-padding: 9 11;" />
-                  <Label text="Starting price" style="-fx-text-fill: #4b5563;" />
-                  <TextField fx:id="startPrice" promptText="Example: 100"
-                             style="-fx-background-radius: 5; -fx-padding: 9 11;" />
-                  <Label text="Bid increment" style="-fx-text-fill: #4b5563;" />
-                  <TextField fx:id="increment" promptText="Example: 10"
-                             style="-fx-background-radius: 5; -fx-padding: 9 11;" />
-                  <Label text="Buy it now price" style="-fx-text-fill: #4b5563;" />
-                  <TextField fx:id="buyItNow" promptText="Example: 500"
-                             style="-fx-background-radius: 5; -fx-padding: 9 11;" />
-                  <Button maxWidth="Infinity" mnemonicParsing="false" onAction="#create" text="Create"
-                          style="-fx-background-color: #1f6f43; -fx-text-fill: white; -fx-background-radius: 5; -fx-padding: 10 14;" />
+                  <Label text="Description" style="-fx-text-fill: #4b5563;" GridPane.rowIndex="0" />
+                  <TextArea fx:id="description" promptText="Describe your item, condition, and rules for buyers."
+                            wrapText="true"
+                            style="-fx-background-radius: 5;"
+                            GridPane.rowIndex="1" />
                </children>
-            </VBox>
+            </GridPane>
+
+            <Separator />
+
+            <Label text="Auction terms"
+                   style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #111827;" />
+
+            <GridPane hgap="14.0" vgap="10.0">
+               <columnConstraints>
+                  <ColumnConstraints hgrow="ALWAYS" minWidth="150.0" percentWidth="50.0" />
+                  <ColumnConstraints hgrow="ALWAYS" minWidth="150.0" percentWidth="50.0" />
+               </columnConstraints>
+               <children>
+                  <Label text="Duration in minutes" style="-fx-text-fill: #4b5563;" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+                  <TextField fx:id="endTime" promptText="Example: 60"
+                             style="-fx-background-radius: 5; -fx-padding: 9 11;"
+                             GridPane.columnIndex="0" GridPane.rowIndex="1" />
+
+                  <Label text="Starting price" style="-fx-text-fill: #4b5563;" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+                  <TextField fx:id="startPrice" promptText="Example: 100"
+                             style="-fx-background-radius: 5; -fx-padding: 9 11;"
+                             GridPane.columnIndex="1" GridPane.rowIndex="1" />
+
+                  <Label text="Bid increment" style="-fx-text-fill: #4b5563;" GridPane.columnIndex="0" GridPane.rowIndex="2" />
+                  <TextField fx:id="increment" promptText="Example: 10"
+                             style="-fx-background-radius: 5; -fx-padding: 9 11;"
+                             GridPane.columnIndex="0" GridPane.rowIndex="3" />
+
+                  <Label text="Buy it now price" style="-fx-text-fill: #4b5563;" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                  <TextField fx:id="buyItNow" promptText="Example: 500"
+                             style="-fx-background-radius: 5; -fx-padding: 9 11;"
+                             GridPane.columnIndex="1" GridPane.rowIndex="3" />
+               </children>
+            </GridPane>
+
+            <HBox alignment="CENTER_RIGHT" spacing="10.0">
+               <children>
+                  <Region HBox.hgrow="ALWAYS" />
+                  <Button mnemonicParsing="false" onAction="#create" text="Create auction"
+                          style="-fx-background-color: #1f6f43; -fx-text-fill: white; -fx-background-radius: 5; -fx-padding: 10 18;" />
+               </children>
+            </HBox>
          </children>
-      </GridPane>
+      </VBox>
    </children>
 </VBox>

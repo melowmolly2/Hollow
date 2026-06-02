@@ -3,8 +3,10 @@ package network;
 import dto.auction.BidPostRequest;
 import dto.auction.BaseItemResponse;
 import dto.auction.BidPostResponse;
+import dto.auction.BidHistoryResponse;
 import dto.auction.GetItemPageResponse;
 import dto.auction.ItemStatusResponse;
+import dto.auction.SellerListingResponse;
 import dto.account.DepositRequest;
 import dto.account.BalanceResponse;
 import dto.auth.AuthResponse;
@@ -32,6 +34,11 @@ public interface AuctionApi {
     Call<GetItemPageResponse> getItems(@Query("page") int page,
                                        @Query("size") int size);
 
+    @GET("/items/listings/{username}")
+    Call<SellerListingResponse> getSellerListings(@Path("username") String username,
+                                                  @Query("page") int page,
+                                                  @Query("size") int size);
+
     @GET("/item/status/{itemId}")
     Call<ItemStatusResponse> getItemStatus(@Path("itemId") Long itemId);
 
@@ -49,4 +56,13 @@ public interface AuctionApi {
             @Header("Authorization") String authorization,
             @Body BidPostRequest request
     );
+
+    @GET("/bids/{itemId}/bids")
+    Call<BidHistoryResponse> getBidHistory(@Path("itemId") Long itemId,
+                                           @Query("page") int page,
+                                           @Query("size") int size);
+
+    @POST("/items/cancel/{itemId}")
+    Call<BaseResponse> cancelItem(@Header("Authorization") String authorization,
+                                  @Path("itemId") Long itemId);
 }

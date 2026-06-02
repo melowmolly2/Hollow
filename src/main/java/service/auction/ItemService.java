@@ -4,6 +4,8 @@ import dto.auction.PublishItemRequest;
 import dto.auction.BaseItemResponse;
 import dto.auction.GetItemPageResponse;
 import dto.auction.ItemStatusResponse;
+import dto.auction.SellerListingResponse;
+import dto.common.BaseResponse;
 import network.ApiClient;
 import model.TokenStorage;
 import retrofit2.Call;
@@ -11,6 +13,60 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 public class ItemService {
+    public void getSellerListings(String username, int page, int size, SellerListingCallback callback) {
+        if (username == null || username.isBlank()) {
+            callback.onError("Missing username");
+            return;
+        }
+
+        ApiClient.api.getSellerListings(username, page, size).enqueue(new Callback<SellerListingResponse>() {
+            @Override
+            public void onResponse(Call<SellerListingResponse> call, Response<SellerListingResponse> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    callback.onSuccess(response.body());
+                    return;
+                }
+
+                callback.onError("Get seller listings failed. HTTP code: " + response.code());
+            }
+
+            @Override
+            public void onFailure(Call<SellerListingResponse> call, Throwable throwable) {
+                callback.onError("Network error: " + throwable.getMessage());
+            }
+        });
+    }
+
+    public void cancelItem(Long itemId, BaseResponseCallback callback) {
+        if (TokenStorage.accessToken == null || TokenStorage.accessToken.isBlank()) {
+            callback.onError("You must login first");
+            return;
+        }
+
+        if (itemId == null) {
+            callback.onError("Missing item id");
+            return;
+        }
+
+        String authorization = "Bearer " + TokenStorage.accessToken;
+        ApiClient.api.cancelItem(authorization, itemId).enqueue(new Callback<BaseResponse>() {
+            @Override
+            public void onResponse(Call<BaseResponse> call, Response<BaseResponse> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    callback.onSuccess(response.body());
+                    return;
+                }
+
+                callback.onError("Cancel item failed. HTTP code: " + response.code());
+            }
+
+            @Override
+            public void onFailure(Call<BaseResponse> call, Throwable throwable) {
+                callback.onError("Network error: " + throwable.getMessage());
+            }
+        });
+    }
+
     public void createItem(
             String title,
             String description,
