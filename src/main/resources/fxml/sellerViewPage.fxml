@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.geometry.Insets?>
-<?import javafx.scene.chart.CategoryAxis?>
 <?import javafx.scene.chart.LineChart?>
 <?import javafx.scene.chart.NumberAxis?>
 <?import javafx.scene.control.Button?>
@@ -134,7 +133,7 @@
                              prefHeight="330.0"
                              VBox.vgrow="ALWAYS">
                     <xAxis>
-                      <CategoryAxis fx:id="bidTimeAxis" side="BOTTOM" label="Time" />
+                      <NumberAxis fx:id="bidTimeAxis" side="BOTTOM" label="Seconds from first bid" />
                     </xAxis>
                     <yAxis>
                       <NumberAxis fx:id="bidPriceAxis" side="LEFT" label="Price" />

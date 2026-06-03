@@ -17,6 +17,7 @@ import service.auction.ItemService;
 import service.auction.ItemStatusCallback;
 import service.auction.BidCallback;
 import service.auction.BidService;
+import service.auction.LocalBidHistoryStore;
 import network.PriceStreamListener;
 
 import java.io.IOException;
@@ -34,11 +35,13 @@ public class BidderViewPage {
     @FXML private Label startTimeLabel;
     @FXML private Label endTimeLabel;
     @FXML private Label minimumBidLabel;
+    @FXML private Label lastBidLabel;
     @FXML private TextField bidAmountField;
 
     private final ItemService itemService = new ItemService();
     private final BidService bidService = new BidService();
     private final AccountService accountService = new AccountService();
+    private final LocalBidHistoryStore localBidHistoryStore = new LocalBidHistoryStore();
     private final PriceStreamListener priceStreamListener = new PriceStreamListener();
     private final DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
@@ -50,6 +53,7 @@ public class BidderViewPage {
         active = true;
         titleLabel.setText(item.title);
         descriptionLabel.setText(item.description);
+        renderLastBid();
         loadItemStatus();
         startPriceStream();
     }
@@ -71,11 +75,15 @@ public class BidderViewPage {
         bidService.placeBid(item.itemId, bidAmountField.getText(), new BidCallback() {
             @Override
             public void onSuccess(BidPostResponse response) {
+                if (response != null && response.bid != null && response.bid.bidAmount != null) {
+                    localBidHistoryStore.addBidPoint(item.itemId, response.bid.bidAmount, System.currentTimeMillis(), true);
+                }
                 Platform.runLater(() -> {
                     if (!active) {
                         return;
                     }
                     bidAmountField.clear();
+                    renderLastBid();
                     AppPopup.info(response.message);
                 });
                 if (active) {
@@ -147,6 +155,7 @@ public class BidderViewPage {
                 return;
             }
             currentPriceLabel.setText("Current price: " + formatMoney(price));
+            localBidHistoryStore.addPoint(item.itemId, price, System.currentTimeMillis());
             loadItemStatus();
             refreshBalance();
         });
@@ -167,6 +176,21 @@ public class BidderViewPage {
         double minimumBid = safeMoney(status.currentPrice) + safeMoney(status.bidIncrement);
         minimumBidLabel.setText("Minimum bid: " + formatMoney(minimumBid));
         bidAmountField.setPromptText(String.format("%.2f", minimumBid));
+    }
+
+    private void renderLastBid() {
+        if (item == null || item.itemId == null) {
+            lastBidLabel.setText("Your last bid: none");
+            return;
+        }
+
+        localBidHistoryStore.getPoints(item.itemId).stream()
+                .filter(point -> point.ownBid && point.amount != null)
+                .reduce((first, second) -> second)
+                .ifPresentOrElse(
+                        point -> lastBidLabel.setText("Your last bid: " + formatMoney(point.amount)),
+                        () -> lastBidLabel.setText("Your last bid: none")
+                );
     }
 
     private String formatMoney(Double value) {
