@@ -80,7 +80,8 @@
                                          promptText="Bid amount"
                                          HBox.hgrow="ALWAYS"
                                          style="-fx-background-radius: 5; -fx-padding: 10 11;" />
-                              <Button mnemonicParsing="false"
+                              <Button fx:id="confirmBidButton"
+                                      mnemonicParsing="false"
                                       onAction="#confirmBid"
                                       text="Confirm"
                                       style="-fx-background-color: #1f6f43; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5; -fx-padding: 10 14;" />
@@ -152,7 +153,8 @@
                         <TextField fx:id="maxBidLimitField"
                                    promptText="Max bid limit"
                                    style="-fx-background-radius: 5; -fx-padding: 8 10;" />
-                        <Button mnemonicParsing="false"
+                        <Button fx:id="autoBidButton"
+                                mnemonicParsing="false"
                                 onAction="#submitAutoBid"
                                 text="Set auto-bid"
                                 style="-fx-background-color: #1f6f43; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5; -fx-padding: 9 14;" />

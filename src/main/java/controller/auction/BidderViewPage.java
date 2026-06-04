@@ -9,9 +9,11 @@ import dto.auction.ItemStatusResponse;
 import dto.common.BaseResponse;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import model.AccountSession;
+import model.TokenStorage;
 import service.account.AccountService;
 import service.account.BalanceCallback;
 import service.auction.ItemService;
@@ -42,6 +44,8 @@ public class BidderViewPage {
     @FXML private TextField bidAmountField;
     @FXML private TextField maxBidLimitField;
     @FXML private Label autoBidStatusLabel;
+    @FXML private Button confirmBidButton;
+    @FXML private Button autoBidButton;
 
     private final ItemService itemService = new ItemService();
     private final BidService bidService = new BidService();
@@ -53,10 +57,15 @@ public class BidderViewPage {
     private ItemResponse item;
     private volatile boolean active;
     private ItemStatusResponse.ItemStatusData latestStatus;
+    private Long observedEndTime;
+    private boolean endPopupShown;
 
     public void setItem(ItemResponse item) {
         this.item = item;
         active = true;
+        observedEndTime = null;
+        endPopupShown = false;
+        setBiddingDisabled(false);
         titleLabel.setText(item.title);
         descriptionLabel.setText(item.description);
         renderLastBid();
@@ -226,6 +235,51 @@ public class BidderViewPage {
         double minimumBid = minimumBid(status);
         minimumBidLabel.setText("Minimum bid: " + formatMoney(minimumBid));
         bidAmountField.setPromptText(String.format("%.2f", minimumBid));
+
+        renderAntiSniping(status.endTime);
+        renderEndedState(status);
+    }
+
+    private void renderAntiSniping(Long endTime) {
+        if (endTime == null) {
+            return;
+        }
+
+        if (observedEndTime != null && endTime > observedEndTime) {
+            AppPopup.info("Auction extended by anti-sniping rule");
+        }
+        observedEndTime = endTime;
+    }
+
+    private void renderEndedState(ItemStatusResponse.ItemStatusData status) {
+        boolean ended = isEnded(status);
+        setBiddingDisabled(ended);
+        if (!ended || endPopupShown) {
+            return;
+        }
+
+        endPopupShown = true;
+        if (TokenStorage.username != null && TokenStorage.username.equals(status.highestBidUser)) {
+            AppPopup.info("Auction ended, you've won");
+        } else {
+            AppPopup.info("Auction ended, you did not win");
+        }
+    }
+
+    private boolean isEnded(ItemStatusResponse.ItemStatusData status) {
+        if (status == null) {
+            return false;
+        }
+        boolean timeEnded = status.endTime != null && status.endTime <= System.currentTimeMillis();
+        boolean statusEnded = status.itemStatus != null && !"ACTIVE".equalsIgnoreCase(status.itemStatus);
+        return timeEnded || statusEnded;
+    }
+
+    private void setBiddingDisabled(boolean disabled) {
+        bidAmountField.setDisable(disabled);
+        maxBidLimitField.setDisable(disabled);
+        confirmBidButton.setDisable(disabled);
+        autoBidButton.setDisable(disabled);
     }
 
     private boolean validateBidAmount() {

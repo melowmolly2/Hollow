@@ -12,6 +12,7 @@ public class GetItemPageResponse extends BaseResponse{
     public static class PageData{
         public List<ItemResponse> content;
         public int totalPages;
+        public long totalElements;
         public int number;
         public int size;
         public boolean first;

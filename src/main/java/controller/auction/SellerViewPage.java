@@ -25,7 +25,6 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 
 public class SellerViewPage {
@@ -55,6 +54,9 @@ public class SellerViewPage {
     private ItemStatusResponse.ItemStatusData latestStatus;
     private final List<Double> observedBidAmounts = new ArrayList<>();
     private boolean bidHistorySeeded;
+    private Long observedEndTime;
+    private boolean endPopupShown;
+    private volatile boolean active;
 
     public void initialize() {
         editAuctionButton.setDisable(true);
@@ -69,6 +71,9 @@ public class SellerViewPage {
         }
 
         this.item = item;
+        active = true;
+        observedEndTime = null;
+        endPopupShown = false;
         titleLabel.setText(valueOrNone(item.title));
         descriptionLabel.setText(valueOrNone(item.description));
         loadItemStatus();
@@ -77,9 +82,10 @@ public class SellerViewPage {
 
     @FXML
     public void back() throws IOException {
-        priceStreamListener.stop();
+        active = false;
         SceneManager.changeContent("/fxml/mySaleTab.fxml");
         SceneManager.selectMySaleNavigation();
+        stopPriceStreamAsync();
     }
 
     @FXML
@@ -99,6 +105,9 @@ public class SellerViewPage {
             @Override
             public void onSuccess(BaseResponse response) {
                 Platform.runLater(() -> {
+                    if (!active) {
+                        return;
+                    }
                     AppPopup.info(response.message);
                     loadItemStatus();
                 });
@@ -107,6 +116,9 @@ public class SellerViewPage {
             @Override
             public void onError(String message) {
                 Platform.runLater(() -> {
+                    if (!active) {
+                        return;
+                    }
                     endAuctionButton.setDisable(false);
                     AppPopup.error(message);
                 });
@@ -122,12 +134,20 @@ public class SellerViewPage {
         itemService.getItemStatus(item.itemId, new ItemStatusCallback() {
             @Override
             public void onSuccess(ItemStatusResponse response) {
-                Platform.runLater(() -> renderStatus(response.itemStatus));
+                Platform.runLater(() -> {
+                    if (active) {
+                        renderStatus(response.itemStatus);
+                    }
+                });
             }
 
             @Override
             public void onError(String message) {
-                Platform.runLater(() -> AppPopup.error(message));
+                Platform.runLater(() -> {
+                    if (active) {
+                        AppPopup.error(message);
+                    }
+                });
             }
         });
     }
@@ -140,12 +160,19 @@ public class SellerViewPage {
         bidService.getBidHistory(item.itemId, 0, 20, new BidHistoryCallback() {
             @Override
             public void onSuccess(BidHistoryResponse response) {
-                Platform.runLater(() -> renderBidHistory(response));
+                Platform.runLater(() -> {
+                    if (active) {
+                        renderBidHistory(response);
+                    }
+                });
             }
 
             @Override
             public void onError(String message) {
                 Platform.runLater(() -> {
+                    if (!active) {
+                        return;
+                    }
                     bidHistorySummaryLabel.setText("Unable to load bid history");
                     AppPopup.error(message);
                 });
@@ -159,6 +186,9 @@ public class SellerViewPage {
         }
 
         priceStreamListener.start(item.itemId, price -> {
+            if (!active) {
+                return;
+            }
             Double currentPrice = displayCurrentPrice(price);
             currentPriceLabel.setText("Current price: " + formatMoney(currentPrice));
             appendObservedBid(currentPrice);
@@ -190,7 +220,38 @@ public class SellerViewPage {
                 ? "End Auction cancels this active auction through the backend."
                 : "End Auction is unavailable because this auction is not active.");
 
+        renderAntiSniping(status.endTime);
+        renderEndedState(status);
         loadBidHistory();
+    }
+
+    private void renderAntiSniping(Long endTime) {
+        if (endTime == null) {
+            return;
+        }
+
+        if (observedEndTime != null && endTime > observedEndTime) {
+            AppPopup.info("Auction extended by anti-sniping rule");
+        }
+        observedEndTime = endTime;
+    }
+
+    private void renderEndedState(ItemStatusResponse.ItemStatusData status) {
+        if (!isEnded(status) || endPopupShown) {
+            return;
+        }
+
+        endPopupShown = true;
+        AppPopup.info("Auction ended");
+    }
+
+    private boolean isEnded(ItemStatusResponse.ItemStatusData status) {
+        if (status == null) {
+            return false;
+        }
+        boolean timeEnded = status.endTime != null && status.endTime <= System.currentTimeMillis();
+        boolean statusEnded = status.itemStatus != null && !"ACTIVE".equalsIgnoreCase(status.itemStatus);
+        return timeEnded || statusEnded;
     }
 
     private void renderBidHistory(BidHistoryResponse response) {
@@ -210,23 +271,23 @@ public class SellerViewPage {
             return;
         }
 
-        List<BidHistoryResponse.BidData> bids = new ArrayList<>(response.entity.content.stream()
+        List<Double> bidAmounts = response.entity.content.stream()
                 .filter(bid -> bid.bidAmount != null)
-                .toList());
+                .map(bid -> safeMoney(bid.bidAmount))
+                .distinct()
+                .sorted()
+                .toList();
 
-        if (bids.isEmpty()) {
+        if (bidAmounts.isEmpty()) {
             bidHistorySummaryLabel.setText("No valid bid amounts");
             return;
-        }
-
-        if (bids.stream().allMatch(bid -> bid.time != null)) {
-            bids.sort(Comparator.comparingLong(bid -> bid.time));
         }
 
         if (!bidHistorySeeded && observedBidAmounts.isEmpty()) {
             observedBidAmounts.clear();
         }
-        bids.forEach(bid -> addObservedBidAmount(safeMoney(bid.bidAmount)));
+        bidAmounts.forEach(this::addObservedBidAmount);
+        sortObservedBidAmounts();
         bidHistorySeeded = true;
         renderObservedBidHistory(startingPrice);
     }
@@ -242,20 +303,22 @@ public class SellerViewPage {
         }
 
         if (addObservedBidAmount(safeMoney(bidAmount))) {
+            sortObservedBidAmounts();
             renderObservedBidHistory(startingPrice);
         }
     }
 
     private boolean addObservedBidAmount(double bidAmount) {
-        if (!observedBidAmounts.isEmpty()) {
-            double lastBidAmount = observedBidAmounts.get(observedBidAmounts.size() - 1);
-            if (Double.compare(lastBidAmount, bidAmount) == 0) {
-                return false;
-            }
+        if (observedBidAmounts.stream().anyMatch(observed -> Double.compare(observed, bidAmount) == 0)) {
+            return false;
         }
 
         observedBidAmounts.add(bidAmount);
         return true;
+    }
+
+    private void sortObservedBidAmounts() {
+        observedBidAmounts.sort(Double::compareTo);
     }
 
     private void renderObservedBidHistory(double startingPrice) {
@@ -312,6 +375,12 @@ public class SellerViewPage {
         }
 
         return timeFormatter.format(Instant.ofEpochMilli(epochMillis).atZone(ZoneId.systemDefault()));
+    }
+
+    private void stopPriceStreamAsync() {
+        Thread stopThread = new Thread(priceStreamListener::stop, "stop-seller-price-stream");
+        stopThread.setDaemon(true);
+        stopThread.start();
     }
 
 }

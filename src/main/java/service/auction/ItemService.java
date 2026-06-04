@@ -8,15 +8,11 @@ import dto.auction.SellerListingResponse;
 import dto.common.BaseResponse;
 import network.ApiClient;
 import model.TokenStorage;
-import service.auth.AuthService;
-import service.auth.TokenRefreshCallback;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
 public class ItemService {
-    private final AuthService authService = new AuthService();
-
     public void getSellerListings(String username, int page, int size, SellerListingCallback callback) {
         if (username == null || username.isBlank()) {
             callback.onError("Missing username");
@@ -42,15 +38,7 @@ public class ItemService {
     }
 
     public void cancelItem(Long itemId, BaseResponseCallback callback) {
-        cancelItem(itemId, callback, true);
-    }
-
-    private void cancelItem(Long itemId, BaseResponseCallback callback, boolean allowRefresh) {
         if (TokenStorage.accessToken == null || TokenStorage.accessToken.isBlank()) {
-            if (canRefresh(allowRefresh)) {
-                refreshThen(() -> cancelItem(itemId, callback, false), callback::onError);
-                return;
-            }
             callback.onError("You must login first");
             return;
         }
@@ -69,8 +57,8 @@ public class ItemService {
                     return;
                 }
 
-                if (isAuthExpired(response) && allowRefresh) {
-                    refreshThen(() -> cancelItem(itemId, callback, false), callback::onError);
+                if (isAuthExpired(response)) {
+                    callback.onError("Session expired. Please login again.");
                     return;
                 }
 
@@ -93,28 +81,7 @@ public class ItemService {
             String buyItNowPriceText,
             ItemCallback callback
     ) {
-        createItem(title, description, durationMinutesText, startingPriceText, bidIncrementText, buyItNowPriceText, callback, true);
-    }
-
-    private void createItem(
-            String title,
-            String description,
-            String durationMinutesText,
-            String startingPriceText,
-            String bidIncrementText,
-            String buyItNowPriceText,
-            ItemCallback callback,
-            boolean allowRefresh
-    ) {
         if (TokenStorage.accessToken == null || TokenStorage.accessToken.isBlank()) {
-            if (canRefresh(allowRefresh)) {
-                refreshThen(
-                        () -> createItem(title, description, durationMinutesText, startingPriceText,
-                                bidIncrementText, buyItNowPriceText, callback, false),
-                        callback::onError
-                );
-                return;
-            }
             callback.onError("You must login first");
             return;
         }
@@ -174,12 +141,8 @@ public class ItemService {
                     return;
                 }
 
-                if (isAuthExpired(response) && allowRefresh) {
-                    refreshThen(
-                            () -> createItem(title, description, durationMinutesText, startingPriceText,
-                                    bidIncrementText, buyItNowPriceText, callback, false),
-                            callback::onError
-                    );
+                if (isAuthExpired(response)) {
+                    callback.onError("Session expired. Please login again.");
                     return;
                 }
 
@@ -193,26 +156,8 @@ public class ItemService {
         });
     }
 
-    private void refreshThen(Runnable onSuccess, java.util.function.Consumer<String> onError) {
-        authService.refreshToken(new TokenRefreshCallback() {
-            @Override
-            public void onSuccess() {
-                onSuccess.run();
-            }
-
-            @Override
-            public void onError(String message) {
-                onError.accept(message);
-            }
-        });
-    }
-
     private boolean isAuthExpired(Response<?> response) {
         return response.code() == 401 || response.code() == 403;
-    }
-
-    private boolean canRefresh(boolean allowRefresh) {
-        return allowRefresh && TokenStorage.refreshToken != null && !TokenStorage.refreshToken.isBlank();
     }
 
     public void getItems(int page, int size, ItemPageCallback callback) {

@@ -7,6 +7,7 @@ import dto.auction.BidPostResponse;
 import dto.auction.BidHistoryResponse;
 import dto.auction.GetItemPageResponse;
 import dto.auction.ItemStatusResponse;
+import dto.auction.MyWinsResponse;
 import dto.auction.SellerListingResponse;
 import dto.account.DepositRequest;
 import dto.account.BalanceResponse;
@@ -75,6 +76,9 @@ public interface AuctionApi {
     Call<BidHistoryResponse> getBidHistory(@Path("itemId") Long itemId,
                                            @Query("page") int page,
                                            @Query("size") int size);
+
+    @GET("/me/wins")
+    Call<MyWinsResponse> getMyWins();
 
     @POST("/items/cancel/{itemId}")
     Call<BaseResponse> cancelItem(@Header("Authorization") String authorization,

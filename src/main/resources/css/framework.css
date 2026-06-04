@@ -30,3 +30,65 @@
 .nav-tab:selected:hover {
     -fx-background-color: #343d4a;
 }
+
+.page-title {
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #111827;
+}
+
+.section-title {
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #111827;
+}
+
+.muted-label {
+    -fx-text-fill: #6b7280;
+}
+
+.primary-button {
+    -fx-background-color: #1f6f43;
+    -fx-text-fill: white;
+    -fx-background-radius: 5;
+    -fx-padding: 9 15;
+}
+
+.metric-card {
+    -fx-background-color: white;
+    -fx-background-radius: 10;
+    -fx-border-color: #e5e7eb;
+    -fx-border-radius: 10;
+    -fx-padding: 18;
+}
+
+.metric-title {
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #374151;
+}
+
+.metric-value {
+    -fx-font-size: 32px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #111827;
+}
+
+.metric-caption {
+    -fx-font-size: 12px;
+    -fx-text-fill: #6b7280;
+}
+
+.dashboard-panel {
+    -fx-background-color: white;
+    -fx-background-radius: 10;
+    -fx-border-color: #e5e7eb;
+    -fx-border-radius: 10;
+    -fx-padding: 18;
+}
+
+.history-list {
+    -fx-background-color: transparent;
+    -fx-border-color: #e5e7eb;
+    -fx-border-radius: 8;
+}

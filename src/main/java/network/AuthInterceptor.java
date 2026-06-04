@@ -4,7 +4,6 @@ import model.TokenStorage;
 import okhttp3.Interceptor;
 import okhttp3.Request;
 import okhttp3.Response;
-import service.auth.TokenRefreshManager;
 
 import java.io.IOException;
 
@@ -14,10 +13,6 @@ public class AuthInterceptor implements Interceptor {
         Request request = chain.request();
         if (!requiresAuthHandling(request)) {
             return chain.proceed(request);
-        }
-
-        if (TokenStorage.hasRefreshToken()) {
-            TokenRefreshManager.refreshIfNeededBlocking();
         }
 
         Request.Builder requestBuilder = request.newBuilder()

@@ -12,7 +12,6 @@ public class ApiClient {
 
     private static final OkHttpClient AUTHENTICATED_CLIENT = new OkHttpClient.Builder()
             .addInterceptor(new AuthInterceptor())
-            .authenticator(new TokenAuthenticator())
             .build();
 
     public static final AuctionApi publicApi = retrofit(PUBLIC_CLIENT)

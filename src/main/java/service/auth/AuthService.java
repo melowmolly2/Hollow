@@ -13,6 +13,7 @@ import retrofit2.Response;
 public class AuthService {
     public void logout(LogoutCallback callback) {
         String authorization = TokenStorage.authorizationHeader();
+        TokenRefreshManager.stop();
         if (authorization == null && !TokenStorage.hasRefreshToken()) {
             TokenStorage.clear();
             callback.onSuccess("Logged out.");
@@ -41,10 +42,6 @@ public class AuthService {
         });
     }
 
-    public void refreshToken(TokenRefreshCallback callback) {
-        TokenRefreshManager.refreshAsync(callback);
-    }
-
     public void login(String username, String password, LoginCallback callback) {
         if (username == null || username.isBlank()) {
             callback.onError("Username is empty");
@@ -63,6 +60,7 @@ public class AuthService {
                 if (response.isSuccessful() && response.body() != null) {
                     AuthResponse auth = response.body();
                     TokenStorage.setSession(username, auth);
+                    TokenRefreshManager.start();
                     callback.onSuccess(auth);
                     return;
                 }

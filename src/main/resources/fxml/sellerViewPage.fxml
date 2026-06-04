@@ -124,7 +124,7 @@
                         <Label text="Bid history"
                                style="-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #111827;" />
                         <Label fx:id="bidHistorySummaryLabel"
-                               text="Bid percentage over starting price"
+                               text="Bid levels over starting price"
                                style="-fx-font-size: 12px; -fx-text-fill: #6b7280;" />
                      </children>
                   </HBox>
@@ -134,7 +134,7 @@
                              prefHeight="330.0"
                              VBox.vgrow="ALWAYS">
                     <xAxis>
-                      <CategoryAxis fx:id="bidTimeAxis" side="BOTTOM" label="Bid #" />
+                      <CategoryAxis fx:id="bidTimeAxis" side="BOTTOM" label="Bid level" />
                     </xAxis>
                     <yAxis>
                       <NumberAxis fx:id="bidPriceAxis" side="LEFT" label="Percent of starting price" />

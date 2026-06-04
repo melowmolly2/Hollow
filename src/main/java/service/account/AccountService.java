@@ -4,25 +4,13 @@ import dto.account.DepositRequest;
 import dto.account.BalanceResponse;
 import network.ApiClient;
 import model.TokenStorage;
-import service.auth.AuthService;
-import service.auth.TokenRefreshCallback;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
 public class AccountService {
-    private final AuthService authService = new AuthService();
-
     public void getBalance(BalanceCallback callback) {
-        getBalance(callback, true);
-    }
-
-    private void getBalance(BalanceCallback callback, boolean allowRefresh) {
         if (TokenStorage.accessToken == null || TokenStorage.accessToken.isBlank()) {
-            if (canRefresh(allowRefresh)) {
-                refreshThen(() -> getBalance(callback, false), callback::onError);
-                return;
-            }
             callback.onError("You must login first");
             return;
         }
@@ -37,8 +25,8 @@ public class AccountService {
                     return;
                 }
 
-                if (isAuthExpired(response) && allowRefresh) {
-                    refreshThen(() -> getBalance(callback, false), callback::onError);
+                if (isAuthExpired(response)) {
+                    callback.onError("Session expired. Please login again.");
                     return;
                 }
 
@@ -53,15 +41,7 @@ public class AccountService {
     }
 
     public void deposit(String amountText, BalanceCallback callback) {
-        deposit(amountText, callback, true);
-    }
-
-    private void deposit(String amountText, BalanceCallback callback, boolean allowRefresh) {
         if (TokenStorage.accessToken == null || TokenStorage.accessToken.isBlank()) {
-            if (canRefresh(allowRefresh)) {
-                refreshThen(() -> deposit(amountText, callback, false), callback::onError);
-                return;
-            }
             callback.onError("You must login first");
             return;
         }
@@ -90,8 +70,8 @@ public class AccountService {
                     return;
                 }
 
-                if (isAuthExpired(response) && allowRefresh) {
-                    refreshThen(() -> deposit(amountText, callback, false), callback::onError);
+                if (isAuthExpired(response)) {
+                    callback.onError("Session expired. Please login again.");
                     return;
                 }
 
@@ -105,25 +85,7 @@ public class AccountService {
         });
     }
 
-    private void refreshThen(Runnable onSuccess, java.util.function.Consumer<String> onError) {
-        authService.refreshToken(new TokenRefreshCallback() {
-            @Override
-            public void onSuccess() {
-                onSuccess.run();
-            }
-
-            @Override
-            public void onError(String message) {
-                onError.accept(message);
-            }
-        });
-    }
-
     private boolean isAuthExpired(Response<?> response) {
         return response.code() == 401 || response.code() == 403;
-    }
-
-    private boolean canRefresh(boolean allowRefresh) {
-        return allowRefresh && TokenStorage.refreshToken != null && !TokenStorage.refreshToken.isBlank();
     }
 }

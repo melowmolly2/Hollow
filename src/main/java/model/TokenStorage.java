@@ -45,6 +45,14 @@ public class TokenStorage {
         return refreshToken;
     }
 
+    public static synchronized boolean hasAccessToken() {
+        return accessToken != null && !accessToken.isBlank();
+    }
+
+    public static synchronized long accessTokenExpiresAtMillis() {
+        return accessTokenExpiresAtMillis;
+    }
+
     public static synchronized String authorizationHeader() {
         if (accessToken == null || accessToken.isBlank()) {
             return null;
@@ -55,22 +63,6 @@ public class TokenStorage {
 
     public static synchronized boolean hasRefreshToken() {
         return refreshToken != null && !refreshToken.isBlank();
-    }
-
-    public static synchronized boolean shouldRefreshAccessToken(long refreshSkewMillis) {
-        if (!hasRefreshToken()) {
-            return false;
-        }
-
-        if (accessToken == null || accessToken.isBlank()) {
-            return true;
-        }
-
-        if (accessTokenExpiresAtMillis <= 0L) {
-            return true;
-        }
-
-        return System.currentTimeMillis() + refreshSkewMillis >= accessTokenExpiresAtMillis;
     }
 
     private static long extractExpiryMillis(String token) {
