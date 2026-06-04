@@ -28,9 +28,6 @@ public interface AuctionApi {
     @POST("/refresh")
     Call<AuthResponse> refresh(@Body RefreshTokenRequest request);
 
-    @POST("/logout")
-    Call<BaseResponse> logout(@Header("Authorization") String authorization);
-
     @POST("/items")
     Call<BaseItemResponse> createItem(
             @Header("Authorization") String authorization,

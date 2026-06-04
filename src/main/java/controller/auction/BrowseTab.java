@@ -47,7 +47,7 @@ public class BrowseTab {
     }
 
     private void loadPage(){
-        int size = 4;
+        int size = 2;
         itemService.getItems(page, size, new ItemPageCallback() {
             @Override
             public void onSuccess(GetItemPageResponse response) {

@@ -169,11 +169,7 @@ public class SellerViewPage {
 
         String itemStatus = valueOrNone(status.itemStatus);
         statusLabel.setText("Status: " + itemStatus);
-        if (status.currentPrice == 0){
-            currentPriceLabel.setText("Current price: " + formatMoney(status.startingPrice));
-        } else {
-            currentPriceLabel.setText("Current price: " + formatMoney(status.currentPrice));
-        }
+        currentPriceLabel.setText("Current price: " + formatMoney(status.currentPrice));
         highestBidderLabel.setText("Highest bidder: " + valueOrNone(status.highestBidUser));
         startingPriceLabel.setText("Starting price: " + formatMoney(status.startingPrice));
         bidIncrementLabel.setText("Bid increment: " + formatMoney(status.bidIncrement));
