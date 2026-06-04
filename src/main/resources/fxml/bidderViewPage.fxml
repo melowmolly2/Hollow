@@ -39,9 +39,6 @@
                          style="-fx-font-size: 12px; -fx-text-fill: #6b7280;" />
                </children>
             </VBox>
-            <Button mnemonicParsing="false"
-                    text="Add to watchlist"
-                    style="-fx-background-color: #f3f4f6; -fx-border-color: #d1d5db; -fx-border-radius: 5; -fx-background-radius: 5; -fx-text-fill: #374151; -fx-padding: 8 13;" />
          </children>
       </HBox>
 

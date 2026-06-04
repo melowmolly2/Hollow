@@ -42,11 +42,6 @@
                          style="-fx-font-size: 12px; -fx-text-fill: #6b7280;" />
                </children>
             </VBox>
-            <Button fx:id="editAuctionButton"
-                    mnemonicParsing="false"
-                    onAction="#editAuction"
-                    text="Edit Auction"
-                    style="-fx-background-color: #f3f4f6; -fx-border-color: #d1d5db; -fx-border-radius: 5; -fx-background-radius: 5; -fx-text-fill: #374151; -fx-padding: 8 13;" />
             <Button fx:id="endAuctionButton"
                     mnemonicParsing="false"
                     onAction="#endAuction"
@@ -109,7 +104,7 @@
                   <Label fx:id="endTimeLabel" text="End time: loading..." wrapText="true" style="-fx-text-fill: #4b5563;" />
                   <Label fx:id="maxEndTimeLabel" text="Max end time: loading..." wrapText="true" style="-fx-text-fill: #4b5563;" />
                   <Label fx:id="actionHelpLabel"
-                         text="Edit is unavailable because the backend has no update endpoint."
+                         text="End Auction is available only while this auction is active."
                          wrapText="true"
                          style="-fx-font-size: 12px; -fx-text-fill: #9ca3af;" />
                </children>

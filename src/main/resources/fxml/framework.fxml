@@ -22,7 +22,6 @@
             <ToggleButton maxWidth="Infinity" mnemonicParsing="false" onAction="#dashboard" selected="true" styleClass="nav-tab" text="Dashboard" toggleGroup="$navGroup" />
             <ToggleButton maxWidth="Infinity" mnemonicParsing="false" onAction="#browse" styleClass="nav-tab" text="Browse Auctions" toggleGroup="$navGroup" />
             <ToggleButton fx:id="mySaleNavButton" maxWidth="Infinity" mnemonicParsing="false" onAction="#mySale" styleClass="nav-tab" text="My Sales" toggleGroup="$navGroup" />
-            <ToggleButton maxWidth="Infinity" mnemonicParsing="false" onAction="#watchlist" styleClass="nav-tab" text="Watchlist" toggleGroup="$navGroup" />
          </children>
       </VBox>
    </left>

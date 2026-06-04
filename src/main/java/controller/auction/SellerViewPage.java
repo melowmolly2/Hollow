@@ -12,7 +12,6 @@ import javafx.scene.chart.LineChart;
 import javafx.scene.chart.XYChart;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.control.Tooltip;
 import network.PriceStreamListener;
 import service.auction.BaseResponseCallback;
 import service.auction.BidHistoryCallback;
@@ -41,7 +40,6 @@ public class SellerViewPage {
     @FXML private Label maxEndTimeLabel;
     @FXML private Label actionHelpLabel;
     @FXML private Label bidHistorySummaryLabel;
-    @FXML private Button editAuctionButton;
     @FXML private Button endAuctionButton;
     @FXML private LineChart<String, Number> bidHistoryChart;
 
@@ -59,8 +57,6 @@ public class SellerViewPage {
     private volatile boolean active;
 
     public void initialize() {
-        editAuctionButton.setDisable(true);
-        editAuctionButton.setTooltip(new Tooltip("Backend does not provide an auction update endpoint."));
         bidHistoryChart.setCreateSymbols(true);
     }
 
@@ -86,11 +82,6 @@ public class SellerViewPage {
         SceneManager.changeContent("/fxml/mySaleTab.fxml");
         SceneManager.selectMySaleNavigation();
         stopPriceStreamAsync();
-    }
-
-    @FXML
-    public void editAuction() {
-        AppPopup.info("Edit Auction is unavailable because the backend has no update endpoint.");
     }
 
     @FXML

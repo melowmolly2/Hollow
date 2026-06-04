@@ -32,9 +32,6 @@ public class Framework {
     @FXML public void mySale() throws IOException {
         SceneManager.changeContent("/fxml/mySaleTab.fxml");
     }
-    @FXML public void watchlist() throws IOException {
-        SceneManager.changeContent("/fxml/watchlistTab.fxml");
-    }
     @FXML public void account(ActionEvent event) throws IOException {
         SceneManager.changeScene(event, "/fxml/accountPage.fxml");
     }

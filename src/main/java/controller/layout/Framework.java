@@ -20,10 +20,6 @@ public class Framework {
     @FXML public void mySale() {
     }
 
-    @FXML public void watchlist() throws IOException {
-        SceneManager.changeContent("/fxml/watchlistTab.fxml");
-    }
-
     @FXML public void account() {
     }
 
