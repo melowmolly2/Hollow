@@ -30,12 +30,14 @@ public class AuthService {
                     return;
                 }
 
-                callback.onError("Logout failed. HTTP code: " + response.code());
+                clearTokens();
+                callback.onSuccess("Logged out.");
             }
 
             @Override
             public void onFailure(Call<BaseResponse> call, Throwable throwable) {
-                callback.onError("Network error: " + throwable.getMessage());
+                clearTokens();
+                callback.onSuccess("Logged out.");
             }
         });
     }

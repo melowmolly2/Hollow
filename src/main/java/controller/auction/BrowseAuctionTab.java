@@ -114,11 +114,6 @@ public class BrowseAuctionTab {
         }
     }
 
-    private void openBidderView(ItemResponse item) {
-        AuctionViewContext.selectedItem = item;
-        AuctionViewContext.selectedMode = AuctionViewContext.Mode.BIDDER;
-    }
-
     private void loadStatus(Long itemId, Card card) {
         if (itemId == null) {
             updateStatusLabels(card, null);
