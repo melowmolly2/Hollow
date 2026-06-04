@@ -87,8 +87,7 @@
                                       style="-fx-background-color: #1f6f43; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5; -fx-padding: 10 14;" />
                            </children>
                         </HBox>
-                        <Label fx:id="lastBidLabel"
-                               text="Your last bid: none"
+                        <Label text="Your last bid:"
                                style="-fx-font-size: 12px; -fx-text-fill: #9ca3af;" />
                      </children>
                   </VBox>
