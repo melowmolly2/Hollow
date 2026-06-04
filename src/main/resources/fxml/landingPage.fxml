@@ -3,33 +3,42 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 
-<StackPane prefHeight="620.0" prefWidth="980.0"
-           style="-fx-background-color: #f6f7f9;"
-           xmlns="http://javafx.com/javafx/25"
-           xmlns:fx="http://javafx.com/fxml/1"
-           fx:controller="controller.auth.LandingPage">
+<StackPane prefHeight="620.0" prefWidth="980.0" style="-fx-background-color: linear-gradient(to bottom right, #10251b, #f4efe4);" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.auth.LandingPage">
    <children>
-      <VBox alignment="CENTER_LEFT"
-            maxWidth="360.0"
-            spacing="14.0"
-            style="-fx-background-color: white; -fx-background-radius: 8; -fx-border-color: #e5e7eb; -fx-border-radius: 8; -fx-padding: 28;">
+      <HBox alignment="CENTER" maxHeight="430.0" maxWidth="780.0" spacing="0.0" style="-fx-background-color: white; -fx-background-radius: 24; -fx-effect: dropshadow(gaussian, rgba(17,24,39,0.22), 28, 0.2, 0, 12);">
          <children>
-            <Label text="Ponzi Auction"
-                   style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #111827;" />
-            <Label text="Sign in or create an account to start managing auctions."
-                   wrapText="true"
-                   style="-fx-text-fill: #4b5563; -fx-font-size: 13px;" />
-            <Button maxWidth="Infinity" mnemonicParsing="false" onAction="#login" text="Login"
-                    style="-fx-background-color: #1f6f43; -fx-text-fill: white; -fx-background-radius: 5; -fx-padding: 10 14;" />
-            <Button maxWidth="Infinity" mnemonicParsing="false" onAction="#register" text="Register"
-                    style="-fx-background-radius: 5; -fx-padding: 10 14;" />
+            <VBox alignment="CENTER_LEFT" prefWidth="430.0" spacing="18.0" style="-fx-background-color: #163527; -fx-background-radius: 24 0 0 24; -fx-padding: 44;">
+               <children>
+                  <ImageView fitHeight="86.0" fitWidth="344.0" preserveRatio="true">
+                     <image>
+                        <Image url="@../images/logo.png" />
+                     </image>
+                  </ImageView>
+                  <Label style="-fx-font-size: 34px; -fx-font-weight: bold; -fx-text-fill: white;" />
+                  <Label prefHeight="46.0" prefWidth="360.0" style="-fx-text-fill: #dbe7df; -fx-font-size: 15px; -fx-line-spacing: 4;" text="Create listings, join biddings and manage your auction wallet in one place." wrapText="true" />
+                  <Region prefHeight="18.0" />
+               </children>
+            </VBox>
+            <VBox alignment="CENTER_LEFT" prefWidth="350.0" spacing="16.0" style="-fx-padding: 44;">
+               <children>
+                  <Label style="-fx-font-size: 26px; -fx-font-weight: bold; -fx-text-fill: #111827;" text="Welcome back" />
+                  <Label style="-fx-text-fill: #5b6472; -fx-font-size: 13px;" text="Choose how you want to continue." wrapText="true" />
+                  <Region prefHeight="8.0" />
+                  <Button maxWidth="Infinity" mnemonicParsing="false" onAction="#login" style="-fx-background-color: #1f6f43; -fx-text-fill: white; -fx-background-radius: 10; -fx-padding: 12 16; -fx-font-weight: bold;" text="Login" />
+                  <Button maxWidth="Infinity" mnemonicParsing="false" onAction="#register" style="-fx-background-color: #f2f4f0; -fx-text-fill: #163527; -fx-background-radius: 10; -fx-padding: 12 16; -fx-font-weight: bold;" text="Create account" />
+               </children>
+            </VBox>
          </children>
          <padding>
             <Insets bottom="0.0" left="0.0" right="0.0" top="0.0" />
          </padding>
-      </VBox>
+      </HBox>
    </children>
 </StackPane>

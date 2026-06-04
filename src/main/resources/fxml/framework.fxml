@@ -1,56 +1,45 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 
-<BorderPane prefHeight="620.0" prefWidth="980.0"
-            style="-fx-background-color: #f6f7f9;"
-            xmlns="http://javafx.com/javafx/25"
-            xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="controller.app.Framework">
+<BorderPane prefHeight="620.0" prefWidth="980.0" style="-fx-background-color: #f6f7f9;" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.app.Framework">
    <left>
-      <VBox prefWidth="180.0"
-            spacing="8.0"
-            style="-fx-background-color: #20242c; -fx-padding: 18;"
-            BorderPane.alignment="CENTER">
+      <VBox prefWidth="180.0" spacing="8.0" style="-fx-background-color: #20242c; -fx-padding: 18 18 18 18;" BorderPane.alignment="CENTER">
          <children>
-            <Label text="Ponzi Auction"
-                   style="-fx-text-fill: white; -fx-font-size: 18px; -fx-font-weight: bold;" />
-            <Region prefHeight="12.0" />
-            <Button maxWidth="Infinity" mnemonicParsing="false" onAction="#dashboard" text="Dashboard"
-                    style="-fx-alignment: CENTER_LEFT; -fx-background-color: transparent; -fx-text-fill: #e8eaed; -fx-padding: 10 12;" />
-            <Button maxWidth="Infinity" mnemonicParsing="false" onAction="#browse" text="Browse Auctions"
-                    style="-fx-alignment: CENTER_LEFT; -fx-background-color: transparent; -fx-text-fill: #e8eaed; -fx-padding: 10 12;" />
-            <Button maxWidth="Infinity" mnemonicParsing="false" onAction="#mySale" text="My Sales"
-                    style="-fx-alignment: CENTER_LEFT; -fx-background-color: transparent; -fx-text-fill: #e8eaed; -fx-padding: 10 12;" />
-            <Button maxWidth="Infinity" mnemonicParsing="false" onAction="#watchlist" text="Watchlist"
-                    style="-fx-alignment: CENTER_LEFT; -fx-background-color: transparent; -fx-text-fill: #e8eaed; -fx-padding: 10 12;" />
+            <Button maxWidth="Infinity" mnemonicParsing="false" onAction="#dashboard" style="-fx-alignment: CENTER_LEFT; -fx-background-color: transparent; -fx-text-fill: #e8eaed; -fx-padding: 10 12;" text="Dashboard" />
+            <Button maxWidth="Infinity" mnemonicParsing="false" onAction="#browse" style="-fx-alignment: CENTER_LEFT; -fx-background-color: transparent; -fx-text-fill: #e8eaed; -fx-padding: 10 12;" text="Browse Auctions" />
+            <Button maxWidth="Infinity" mnemonicParsing="false" onAction="#mySale" style="-fx-alignment: CENTER_LEFT; -fx-background-color: transparent; -fx-text-fill: #e8eaed; -fx-padding: 10 12;" text="My Sales" />
+            <Button maxWidth="Infinity" mnemonicParsing="false" onAction="#watchlist" style="-fx-alignment: CENTER_LEFT; -fx-background-color: transparent; -fx-text-fill: #e8eaed; -fx-padding: 10 12;" text="Watchlist" />
          </children>
       </VBox>
    </left>
    <top>
-      <HBox alignment="CENTER_RIGHT"
-            prefHeight="58.0"
-            spacing="14.0"
-            style="-fx-background-color: white; -fx-border-color: transparent transparent #e1e4e8 transparent; -fx-padding: 0 22;"
-            BorderPane.alignment="CENTER">
+      <HBox alignment="CENTER_LEFT" prefHeight="64.0" spacing="14.0" style="-fx-background-color: white; -fx-border-color: transparent transparent #e1e4e8 transparent; -fx-padding: 0 22;" BorderPane.alignment="CENTER">
          <children>
-            <Label fx:id="balanceLabel" text="Your balance: 0.00"
-                   style="-fx-text-fill: #4b5563; -fx-font-size: 13px;" />
-            <Button mnemonicParsing="false" onAction="#account" text="Account"
-                    style="-fx-background-color: #1f6f43; -fx-text-fill: white; -fx-background-radius: 5; -fx-padding: 8 14;" />
+            <HBox alignment="CENTER_LEFT" spacing="10.0">
+               <children>
+                  <ImageView fitHeight="61.0" fitWidth="232.0" preserveRatio="true">
+                     <image>
+                        <Image url="@../images/frameworkLogo.png" />
+                     </image>
+                  </ImageView>
+               </children>
+            </HBox>
+            <Region HBox.hgrow="ALWAYS" />
+            <Label fx:id="balanceLabel" style="-fx-text-fill: #4b5563; -fx-font-size: 13px;" text="Your balance: 0.00" />
+            <Button mnemonicParsing="false" onAction="#account" style="-fx-background-color: #1f6f43; -fx-text-fill: white; -fx-background-radius: 5; -fx-padding: 8 14;" text="Account" />
          </children>
       </HBox>
    </top>
    <center>
-      <StackPane fx:id="contentArea"
-                 style="-fx-padding: 22;"
-                 BorderPane.alignment="CENTER" />
+      <StackPane fx:id="contentArea" style="-fx-padding: 22;" BorderPane.alignment="CENTER" />
    </center>
 </BorderPane>
