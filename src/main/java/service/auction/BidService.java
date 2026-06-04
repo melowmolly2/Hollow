@@ -20,31 +20,16 @@ public class BidService {
     private final AuthService authService = new AuthService();
 
     public void getBidHistory(Long itemId, int page, int size, BidHistoryCallback callback) {
-        getBidHistory(itemId, page, size, callback, true);
-    }
-
-    private void getBidHistory(Long itemId, int page, int size, BidHistoryCallback callback, boolean allowRefresh) {
-        if (TokenStorage.accessToken == null || TokenStorage.accessToken.isBlank()) {
-            callback.onError("You must login first");
-            return;
-        }
-
         if (itemId == null) {
             callback.onError("Missing item id");
             return;
         }
 
-        String authorization = "Bearer " + TokenStorage.accessToken;
-        ApiClient.api.getBidHistory(authorization, itemId, page, size).enqueue(new Callback<BidHistoryResponse>() {
+        ApiClient.api.getBidHistory(itemId, page, size).enqueue(new Callback<BidHistoryResponse>() {
             @Override
             public void onResponse(Call<BidHistoryResponse> call, Response<BidHistoryResponse> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     callback.onSuccess(response.body());
-                    return;
-                }
-
-                if (response.code() == 401 && allowRefresh) {
-                    refreshThen(() -> getBidHistory(itemId, page, size, callback, false), callback::onError);
                     return;
                 }
 

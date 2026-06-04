@@ -27,26 +27,15 @@ public class PriceStreamListener {
     public synchronized void stop() {
         running = false;
 
-        HttpURLConnection connectionToClose = connection;
-        connection = null;
+        if (connection != null) {
+            connection.disconnect();
+            connection = null;
+        }
 
         if (thread != null && thread != Thread.currentThread()) {
             thread.interrupt();
         }
         thread = null;
-
-        if (connectionToClose == null) {
-            return;
-        }
-
-        if (Platform.isFxApplicationThread()) {
-            Thread disconnectThread = new Thread(connectionToClose::disconnect);
-            disconnectThread.setDaemon(true);
-            disconnectThread.setName("price-stream-disconnect");
-            disconnectThread.start();
-        } else {
-            connectionToClose.disconnect();
-        }
     }
 
     private void listen(Long itemId, Consumer<Double> onPrice) {
