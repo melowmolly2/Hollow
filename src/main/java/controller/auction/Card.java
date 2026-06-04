@@ -86,7 +86,12 @@ public class Card {
             return;
         }
 
-        priceLabel.setText("Price: " + formatMoney(status.currentPrice));
+        if (status.currentPrice == 0){
+            priceLabel.setText(("Price: " + formatMoney(status.startingPrice)));
+        } else {
+            priceLabel.setText("Price: " + formatMoney(status.currentPrice));
+        }
+
         timeLabel.setText("Time: " + formatTimeLeft(status.endTime));
     }
 

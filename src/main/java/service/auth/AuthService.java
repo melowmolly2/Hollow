@@ -12,6 +12,50 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 public class AuthService {
+    public void logout(LogoutCallback callback) {
+        logout(callback, true);
+    }
+
+    private void logout(LogoutCallback callback, boolean allowRefresh) {
+        if (TokenStorage.accessToken == null || TokenStorage.accessToken.isBlank()) {
+            clearTokens();
+            callback.onComplete();
+            return;
+        }
+
+        String authorization = "Bearer " + TokenStorage.accessToken;
+        ApiClient.api.logout(authorization).enqueue(new Callback<BaseResponse>() {
+            @Override
+            public void onResponse(Call<BaseResponse> call, Response<BaseResponse> response) {
+                if (response.code() == 401 && allowRefresh
+                        && TokenStorage.refreshToken != null && !TokenStorage.refreshToken.isBlank()) {
+                    refreshToken(new TokenRefreshCallback() {
+                        @Override
+                        public void onSuccess() {
+                            logout(callback, false);
+                        }
+
+                        @Override
+                        public void onError(String message) {
+                            clearTokens();
+                            callback.onComplete();
+                        }
+                    });
+                    return;
+                }
+
+                clearTokens();
+                callback.onComplete();
+            }
+
+            @Override
+            public void onFailure(Call<BaseResponse> call, Throwable throwable) {
+                clearTokens();
+                callback.onComplete();
+            }
+        });
+    }
+
     public void refreshToken(TokenRefreshCallback callback) {
         if (TokenStorage.refreshToken == null || TokenStorage.refreshToken.isBlank()) {
             callback.onError("Session expired. Please login again.");

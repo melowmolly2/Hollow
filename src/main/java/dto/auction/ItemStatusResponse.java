@@ -1,8 +1,10 @@
 package dto.auction;
 
+import com.google.gson.annotations.SerializedName;
 import dto.common.BaseResponse;
 
 public class ItemStatusResponse extends BaseResponse {
+    @SerializedName("entity")
     public ItemStatusData itemStatus;
     public static class ItemStatusData{
         public long id;

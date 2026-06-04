@@ -48,8 +48,12 @@
          <children>
             <Label text="Account settings"
                    style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #111827;" />
-            <Label text="Logout will be added later."
+            <Label text="End your current session on this device."
                    style="-fx-text-fill: #6b7280;" />
+            <Button mnemonicParsing="false"
+                    onAction="#logout"
+                    text="Logout"
+                    style="-fx-background-color: #b42318; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5; -fx-padding: 9 16;" />
          </children>
       </VBox>
    </children>
