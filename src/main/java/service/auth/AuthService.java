@@ -12,6 +12,34 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 public class AuthService {
+    public void logout(LogoutCallback callback) {
+        if (TokenStorage.accessToken == null || TokenStorage.accessToken.isBlank()) {
+            clearTokens();
+            callback.onSuccess("Logged out.");
+            return;
+        }
+
+        String authorization = "Bearer " + TokenStorage.accessToken;
+        ApiClient.api.logout(authorization).enqueue(new Callback<BaseResponse>() {
+            @Override
+            public void onResponse(Call<BaseResponse> call, Response<BaseResponse> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    String message = response.body().message;
+                    clearTokens();
+                    callback.onSuccess(message == null || message.isBlank() ? "Logged out." : message);
+                    return;
+                }
+
+                callback.onError("Logout failed. HTTP code: " + response.code());
+            }
+
+            @Override
+            public void onFailure(Call<BaseResponse> call, Throwable throwable) {
+                callback.onError("Network error: " + throwable.getMessage());
+            }
+        });
+    }
+
     public void refreshToken(TokenRefreshCallback callback) {
         if (TokenStorage.refreshToken == null || TokenStorage.refreshToken.isBlank()) {
             callback.onError("Session expired. Please login again.");

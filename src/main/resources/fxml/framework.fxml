@@ -45,6 +45,8 @@
                    style="-fx-text-fill: #4b5563; -fx-font-size: 13px;" />
             <Button mnemonicParsing="false" onAction="#account" text="Account"
                     style="-fx-background-color: #1f6f43; -fx-text-fill: white; -fx-background-radius: 5; -fx-padding: 8 14;" />
+            <Button mnemonicParsing="false" onAction="#logout" text="Logout"
+                    style="-fx-background-color: #a2352f; -fx-text-fill: white; -fx-background-radius: 5; -fx-padding: 8 14;" />
          </children>
       </HBox>
    </top>

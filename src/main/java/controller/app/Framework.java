@@ -2,6 +2,7 @@ package controller.app;
 
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.layout.StackPane;
@@ -9,6 +10,8 @@ import model.AccountSession;
 import dto.account.BalanceResponse;
 import service.account.AccountService;
 import service.account.BalanceCallback;
+import service.auth.AuthService;
+import service.auth.LogoutCallback;
 
 import java.io.IOException;
 
@@ -17,6 +20,7 @@ public class Framework {
     @FXML private Label balanceLabel;
 
     private final AccountService accountService = new AccountService();
+    private final AuthService authService = new AuthService();
 
     @FXML public void dashboard() throws IOException {
         SceneManager.changeContent("/fxml/dashboardTab.fxml");
@@ -32,6 +36,28 @@ public class Framework {
     }
     @FXML public void account() throws IOException {
         SceneManager.changeContent("/fxml/accountPage.fxml");
+    }
+
+    @FXML public void logout(ActionEvent event) {
+        authService.logout(new LogoutCallback() {
+            @Override
+            public void onSuccess(String message) {
+                Platform.runLater(() -> {
+                    try {
+                        AccountSession.setBalance(0.0);
+                        SceneManager.changeScene(event, "/fxml/landingPage.fxml");
+                        AppPopup.info(message);
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                });
+            }
+
+            @Override
+            public void onError(String message) {
+                AppPopup.error(message);
+            }
+        });
     }
 
     public void initialize() throws IOException {
