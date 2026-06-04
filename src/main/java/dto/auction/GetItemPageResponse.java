@@ -1,10 +1,12 @@
 package dto.auction;
 
+import com.google.gson.annotations.SerializedName;
 import dto.common.BaseResponse;
 
 import java.util.List;
 
 public class GetItemPageResponse extends BaseResponse{
+    @SerializedName("entity")
     public PageData pages;
 
     public static class PageData{

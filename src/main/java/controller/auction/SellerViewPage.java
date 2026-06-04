@@ -51,6 +51,7 @@ public class SellerViewPage {
     private final DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
     private ItemResponse item;
+    private ItemStatusResponse.ItemStatusData latestStatus;
 
     public void initialize() {
         editAuctionButton.setDisable(true);
@@ -156,7 +157,7 @@ public class SellerViewPage {
         }
 
         priceStreamListener.start(item.itemId, price -> {
-            currentPriceLabel.setText("Current price: " + formatMoney(price));
+            currentPriceLabel.setText("Current price: " + formatMoney(displayCurrentPrice(price)));
             loadItemStatus();
             loadBidHistory();
         });
@@ -168,8 +169,10 @@ public class SellerViewPage {
         }
 
         String itemStatus = valueOrNone(status.itemStatus);
+        latestStatus = status;
+
         statusLabel.setText("Status: " + itemStatus);
-        currentPriceLabel.setText("Current price: " + formatMoney(status.currentPrice));
+        currentPriceLabel.setText("Current price: " + formatMoney(displayCurrentPrice(status)));
         highestBidderLabel.setText("Highest bidder: " + valueOrNone(status.highestBidUser));
         startingPriceLabel.setText("Starting price: " + formatMoney(status.startingPrice));
         bidIncrementLabel.setText("Bid increment: " + formatMoney(status.bidIncrement));
@@ -210,6 +213,18 @@ public class SellerViewPage {
 
     private boolean hasEnded(Long endTime) {
         return endTime != null && endTime <= System.currentTimeMillis();
+    }
+
+    private Double displayCurrentPrice(ItemStatusResponse.ItemStatusData status) {
+        if (status == null) {
+            return null;
+        }
+        return Math.max(safeMoney(status.currentPrice), safeMoney(status.startingPrice));
+    }
+
+    private Double displayCurrentPrice(Double streamedPrice) {
+        double startingPrice = latestStatus == null ? 0.0 : safeMoney(latestStatus.startingPrice);
+        return Math.max(safeMoney(streamedPrice), startingPrice);
     }
 
     private String formatMoney(Double value) {

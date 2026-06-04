@@ -44,6 +44,7 @@ public class BidderViewPage {
 
     private ItemResponse item;
     private volatile boolean active;
+    private ItemStatusResponse.ItemStatusData latestStatus;
 
     public void setItem(ItemResponse item) {
         this.item = item;
@@ -65,6 +66,10 @@ public class BidderViewPage {
     public void confirmBid() {
         if (item == null) {
             AppPopup.error("Missing item");
+            return;
+        }
+
+        if (!validateBidAmount()) {
             return;
         }
 
@@ -146,7 +151,7 @@ public class BidderViewPage {
             if (!active) {
                 return;
             }
-            currentPriceLabel.setText("Current price: " + formatMoney(price));
+            currentPriceLabel.setText("Current price: " + formatMoney(displayCurrentPrice(price)));
             loadItemStatus();
             refreshBalance();
         });
@@ -157,16 +162,62 @@ public class BidderViewPage {
             return;
         }
 
-        currentPriceLabel.setText("Current price: " + formatMoney(status.currentPrice));
+        latestStatus = status;
+
+        currentPriceLabel.setText("Current price: " + formatMoney(displayCurrentPrice(status)));
         highestBidderLabel.setText("Highest bidder: " + valueOrNone(status.highestBidUser));
         startingPriceLabel.setText("Starting price: " + formatMoney(status.startingPrice));
         bidIncrementLabel.setText("Bid increment: " + formatMoney(status.bidIncrement));
         startTimeLabel.setText("Start time: " + formatTime(status.startTime));
         endTimeLabel.setText("End time: " + formatTime(status.endTime));
 
-        double minimumBid = safeMoney(status.currentPrice) + safeMoney(status.bidIncrement);
+        double minimumBid = minimumBid(status);
         minimumBidLabel.setText("Minimum bid: " + formatMoney(minimumBid));
         bidAmountField.setPromptText(String.format("%.2f", minimumBid));
+    }
+
+    private boolean validateBidAmount() {
+        if (latestStatus == null) {
+            AppPopup.error("Auction status is still loading");
+            return false;
+        }
+
+        double bidAmount;
+        try {
+            bidAmount = Double.parseDouble(bidAmountField.getText());
+        } catch (NumberFormatException e) {
+            AppPopup.error("Bid amount must be a valid number");
+            return false;
+        }
+
+        double minimumBid = minimumBid(latestStatus);
+        if (bidAmount < minimumBid) {
+            AppPopup.error("Bid amount must be at least " + formatMoney(minimumBid));
+            return false;
+        }
+
+        return true;
+    }
+
+    private double minimumBid(ItemStatusResponse.ItemStatusData status) {
+        double currentPrice = safeMoney(status.currentPrice);
+        double startingPrice = safeMoney(status.startingPrice);
+        double bidIncrement = safeMoney(status.bidIncrement);
+
+        if (currentPrice < startingPrice) {
+            return startingPrice;
+        }
+
+        return currentPrice + bidIncrement;
+    }
+
+    private double displayCurrentPrice(ItemStatusResponse.ItemStatusData status) {
+        return Math.max(safeMoney(status.currentPrice), safeMoney(status.startingPrice));
+    }
+
+    private Double displayCurrentPrice(Double streamedPrice) {
+        double startingPrice = latestStatus == null ? 0.0 : safeMoney(latestStatus.startingPrice);
+        return Math.max(safeMoney(streamedPrice), startingPrice);
     }
 
     private String formatMoney(Double value) {

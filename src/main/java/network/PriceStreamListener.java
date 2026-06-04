@@ -41,7 +41,7 @@ public class PriceStreamListener {
     private void listen(Long itemId, Consumer<Double> onPrice) {
         HttpURLConnection activeConnection = null;
         try {
-            URL url = new URL("http://localhost:8080/items/stream/" + itemId);
+            URL url = new URL(ApiClient.BASE_URL + "items/stream/" + itemId);
             activeConnection = (HttpURLConnection) url.openConnection();
             connection = activeConnection;
             activeConnection.setRequestMethod("GET");

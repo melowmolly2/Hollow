@@ -86,8 +86,19 @@ public class Card {
             return;
         }
 
-        priceLabel.setText("Price: " + formatMoney(status.currentPrice));
+        priceLabel.setText("Price: " + formatMoney(displayCurrentPrice(status)));
         timeLabel.setText("Time: " + formatTimeLeft(status.endTime));
+    }
+
+    private Double displayCurrentPrice(ItemStatusResponse.ItemStatusData status) {
+        if (status == null) {
+            return null;
+        }
+        return Math.max(safeMoney(status.currentPrice), safeMoney(status.startingPrice));
+    }
+
+    private double safeMoney(Double value) {
+        return value == null ? 0.0 : value;
     }
 
     private String formatMoney(Double value) {
