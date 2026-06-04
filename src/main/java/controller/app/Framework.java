@@ -12,6 +12,7 @@ import model.TokenStorage;
 import dto.account.BalanceResponse;
 import service.account.AccountService;
 import service.account.BalanceCallback;
+import service.account.BalanceStreamManager;
 
 import java.io.IOException;
 
@@ -43,6 +44,7 @@ public class Framework {
         balanceLabel.textProperty().bind(Bindings.format("Your balance: %.2f", AccountSession.balanceProperty()));
         SceneManager.changeContent("/fxml/dashboardTab.fxml");
         refreshBalance();
+        BalanceStreamManager.start(TokenStorage.username);
     }
 
     private String valueOrGuest(String value) {

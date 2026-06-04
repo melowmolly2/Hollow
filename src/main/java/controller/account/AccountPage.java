@@ -12,6 +12,7 @@ import model.AccountSession;
 import dto.account.BalanceResponse;
 import service.account.AccountService;
 import service.account.BalanceCallback;
+import service.account.BalanceStreamManager;
 import service.auth.AuthService;
 import service.auth.LogoutCallback;
 
@@ -58,6 +59,7 @@ public class AccountPage {
             public void onSuccess(String message) {
                 Platform.runLater(() -> {
                     try {
+                        BalanceStreamManager.stop();
                         AccountSession.setBalance(0.0);
                         SceneManager.changeScene(event, "/fxml/landingPage.fxml");
                         AppPopup.info(message);

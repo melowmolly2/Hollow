@@ -2,7 +2,6 @@ package controller.auction;
 
 import controller.app.AppPopup;
 import controller.app.SceneManager;
-import dto.account.BalanceResponse;
 import dto.auction.BidPostResponse;
 import dto.auction.ItemResponse;
 import dto.auction.ItemStatusResponse;
@@ -12,10 +11,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
-import model.AccountSession;
 import model.TokenStorage;
-import service.account.AccountService;
-import service.account.BalanceCallback;
 import service.auction.ItemService;
 import service.auction.ItemStatusCallback;
 import service.auction.BaseResponseCallback;
@@ -49,7 +45,6 @@ public class BidderViewPage {
 
     private final ItemService itemService = new ItemService();
     private final BidService bidService = new BidService();
-    private final AccountService accountService = new AccountService();
     private final PriceStreamListener priceStreamListener = new PriceStreamListener();
     private final DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
     private static final Map<Long, Double> lastBidByItem = new HashMap<>();
@@ -105,7 +100,6 @@ public class BidderViewPage {
                 });
                 if (active) {
                     loadItemStatus();
-                    refreshBalance();
                 }
             }
 
@@ -143,7 +137,6 @@ public class BidderViewPage {
                 });
                 if (active) {
                     loadItemStatus();
-                    refreshBalance();
                 }
             }
 
@@ -183,26 +176,6 @@ public class BidderViewPage {
         });
     }
 
-    private void refreshBalance() {
-        accountService.getBalance(new BalanceCallback() {
-            @Override
-            public void onSuccess(BalanceResponse response) {
-                Platform.runLater(() -> {
-                    if (active) {
-                        AccountSession.setBalance(response.balance);
-                    }
-                });
-            }
-
-            @Override
-            public void onError(String message) {
-                if (active) {
-                    AppPopup.error(message);
-                }
-            }
-        });
-    }
-
     private void startPriceStream() {
         if (item == null || item.itemId == null) {
             return;
@@ -214,7 +187,6 @@ public class BidderViewPage {
             }
             currentPriceLabel.setText("Current price: " + formatMoney(displayCurrentPrice(price)));
             loadItemStatus();
-            refreshBalance();
         });
     }
 
