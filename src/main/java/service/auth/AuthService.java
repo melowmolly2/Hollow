@@ -1,7 +1,6 @@
 package service.auth;
 
 import dto.auth.LoginRequest;
-import dto.auth.RefreshTokenRequest;
 import dto.auth.RegisterRequest;
 import dto.auth.AuthResponse;
 import dto.common.BaseResponse;
@@ -13,62 +12,37 @@ import retrofit2.Response;
 
 public class AuthService {
     public void logout(LogoutCallback callback) {
-        if (TokenStorage.accessToken == null || TokenStorage.accessToken.isBlank()) {
-            clearTokens();
+        String authorization = TokenStorage.authorizationHeader();
+        if (authorization == null && !TokenStorage.hasRefreshToken()) {
+            TokenStorage.clear();
             callback.onSuccess("Logged out.");
             return;
         }
 
-        String authorization = "Bearer " + TokenStorage.accessToken;
         ApiClient.api.logout(authorization).enqueue(new Callback<BaseResponse>() {
             @Override
             public void onResponse(Call<BaseResponse> call, Response<BaseResponse> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     String message = response.body().message;
-                    clearTokens();
+                    TokenStorage.clear();
                     callback.onSuccess(message == null || message.isBlank() ? "Logged out." : message);
                     return;
                 }
 
-                clearTokens();
+                TokenStorage.clear();
                 callback.onSuccess("Logged out.");
             }
 
             @Override
             public void onFailure(Call<BaseResponse> call, Throwable throwable) {
-                clearTokens();
+                TokenStorage.clear();
                 callback.onSuccess("Logged out.");
             }
         });
     }
 
     public void refreshToken(TokenRefreshCallback callback) {
-        if (TokenStorage.refreshToken == null || TokenStorage.refreshToken.isBlank()) {
-            callback.onError("Session expired. Please login again.");
-            return;
-        }
-
-        RefreshTokenRequest request = new RefreshTokenRequest(TokenStorage.refreshToken);
-        ApiClient.api.refresh(request).enqueue(new Callback<AuthResponse>() {
-            @Override
-            public void onResponse(Call<AuthResponse> call, Response<AuthResponse> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    AuthResponse auth = response.body();
-                    TokenStorage.accessToken = auth.accessToken;
-                    TokenStorage.refreshToken = auth.refreshToken;
-                    callback.onSuccess();
-                    return;
-                }
-
-                clearTokens();
-                callback.onError("Session expired. Please login again.");
-            }
-
-            @Override
-            public void onFailure(Call<AuthResponse> call, Throwable throwable) {
-                callback.onError("Network error: " + throwable.getMessage());
-            }
-        });
+        TokenRefreshManager.refreshAsync(callback);
     }
 
     public void login(String username, String password, LoginCallback callback) {
@@ -83,14 +57,12 @@ public class AuthService {
         }
 
         LoginRequest request = new LoginRequest(username, password);
-        ApiClient.api.login(request).enqueue(new Callback<AuthResponse>() {
+        ApiClient.publicApi.login(request).enqueue(new Callback<AuthResponse>() {
             @Override
             public void onResponse(Call<AuthResponse> call, Response<AuthResponse> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     AuthResponse auth = response.body();
-                    TokenStorage.accessToken = auth.accessToken;
-                    TokenStorage.refreshToken = auth.refreshToken;
-                    TokenStorage.username = username;
+                    TokenStorage.setSession(username, auth);
                     callback.onSuccess(auth);
                     return;
                 }
@@ -122,7 +94,7 @@ public class AuthService {
         }
 
         RegisterRequest request = new RegisterRequest(username, displayName, password);
-        ApiClient.api.register(request).enqueue(new Callback<BaseResponse>() {
+        ApiClient.publicApi.register(request).enqueue(new Callback<BaseResponse>() {
             @Override
             public void onResponse(Call<BaseResponse> call, Response<BaseResponse> response) {
                 if (response.isSuccessful() && response.body() != null) {
@@ -140,9 +112,4 @@ public class AuthService {
         });
     }
 
-    private void clearTokens() {
-        TokenStorage.accessToken = null;
-        TokenStorage.refreshToken = null;
-        TokenStorage.username = null;
-    }
 }
