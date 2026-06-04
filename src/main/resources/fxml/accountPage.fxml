@@ -6,9 +6,9 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
-<VBox prefHeight="560.0" prefWidth="760.0"
+<VBox prefHeight="620.0" prefWidth="980.0"
       spacing="18.0"
-      style="-fx-background-color: transparent;"
+      style="-fx-background-color: #f6f7f9; -fx-padding: 32;"
       xmlns="http://javafx.com/javafx/25"
       xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="controller.account.AccountPage">

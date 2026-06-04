@@ -19,6 +19,10 @@ public class AccountService {
 
     private void getBalance(BalanceCallback callback, boolean allowRefresh) {
         if (TokenStorage.accessToken == null || TokenStorage.accessToken.isBlank()) {
+            if (canRefresh(allowRefresh)) {
+                refreshThen(() -> getBalance(callback, false), callback::onError);
+                return;
+            }
             callback.onError("You must login first");
             return;
         }
@@ -33,7 +37,7 @@ public class AccountService {
                     return;
                 }
 
-                if (response.code() == 401 && allowRefresh) {
+                if (isAuthExpired(response) && allowRefresh) {
                     refreshThen(() -> getBalance(callback, false), callback::onError);
                     return;
                 }
@@ -54,6 +58,10 @@ public class AccountService {
 
     private void deposit(String amountText, BalanceCallback callback, boolean allowRefresh) {
         if (TokenStorage.accessToken == null || TokenStorage.accessToken.isBlank()) {
+            if (canRefresh(allowRefresh)) {
+                refreshThen(() -> deposit(amountText, callback, false), callback::onError);
+                return;
+            }
             callback.onError("You must login first");
             return;
         }
@@ -82,7 +90,7 @@ public class AccountService {
                     return;
                 }
 
-                if (response.code() == 401 && allowRefresh) {
+                if (isAuthExpired(response) && allowRefresh) {
                     refreshThen(() -> deposit(amountText, callback, false), callback::onError);
                     return;
                 }
@@ -109,5 +117,13 @@ public class AccountService {
                 onError.accept(message);
             }
         });
+    }
+
+    private boolean isAuthExpired(Response<?> response) {
+        return response.code() == 401 || response.code() == 403;
+    }
+
+    private boolean canRefresh(boolean allowRefresh) {
+        return allowRefresh && TokenStorage.refreshToken != null && !TokenStorage.refreshToken.isBlank();
     }
 }

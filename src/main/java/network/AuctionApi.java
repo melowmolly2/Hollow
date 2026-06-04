@@ -1,6 +1,7 @@
 package network;
 
 import dto.auction.BidPostRequest;
+import dto.auction.AutoBidRequest;
 import dto.auction.BaseItemResponse;
 import dto.auction.BidPostResponse;
 import dto.auction.BidHistoryResponse;
@@ -62,6 +63,12 @@ public interface AuctionApi {
     Call<BidPostResponse> placeBid(
             @Header("Authorization") String authorization,
             @Body BidPostRequest request
+    );
+
+    @POST("/auto-bid")
+    Call<BaseResponse> autoBid(
+            @Header("Authorization") String authorization,
+            @Body AutoBidRequest request
     );
 
     @GET("/bids/{itemId}/bids")

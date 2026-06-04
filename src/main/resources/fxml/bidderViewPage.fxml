@@ -2,7 +2,6 @@
 
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
-<?import javafx.scene.control.CheckBox?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.Separator?>
 <?import javafx.scene.control.TextField?>
@@ -145,13 +144,17 @@
                      <children>
                         <Label text="Auto-bidding"
                                style="-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #111827;" />
-                        <CheckBox mnemonicParsing="false"
-                                  text="Enable auto-bidding"
-                                  style="-fx-text-fill: #374151;" />
-                        <TextField promptText="Max bid"
+                        <Label fx:id="autoBidStatusLabel"
+                               text="Autobid: disabled"
+                               wrapText="true"
+                               style="-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #6b7280;" />
+                        <TextField fx:id="maxBidLimitField"
+                                   promptText="Max bid limit"
                                    style="-fx-background-radius: 5; -fx-padding: 8 10;" />
-                        <TextField promptText="Increment"
-                                   style="-fx-background-radius: 5; -fx-padding: 8 10;" />
+                        <Button mnemonicParsing="false"
+                                onAction="#submitAutoBid"
+                                text="Set auto-bid"
+                                style="-fx-background-color: #1f6f43; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5; -fx-padding: 9 14;" />
                         <Region VBox.vgrow="ALWAYS" />
                      </children>
                   </VBox>

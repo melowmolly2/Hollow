@@ -6,6 +6,7 @@ import dto.account.BalanceResponse;
 import dto.auction.BidPostResponse;
 import dto.auction.ItemResponse;
 import dto.auction.ItemStatusResponse;
+import dto.common.BaseResponse;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
@@ -15,6 +16,7 @@ import service.account.AccountService;
 import service.account.BalanceCallback;
 import service.auction.ItemService;
 import service.auction.ItemStatusCallback;
+import service.auction.BaseResponseCallback;
 import service.auction.BidCallback;
 import service.auction.BidService;
 import network.PriceStreamListener;
@@ -35,6 +37,8 @@ public class BidderViewPage {
     @FXML private Label endTimeLabel;
     @FXML private Label minimumBidLabel;
     @FXML private TextField bidAmountField;
+    @FXML private TextField maxBidLimitField;
+    @FXML private Label autoBidStatusLabel;
 
     private final ItemService itemService = new ItemService();
     private final BidService bidService = new BidService();
@@ -94,6 +98,47 @@ public class BidderViewPage {
                 if (active) {
                     AppPopup.error(message);
                 }
+            }
+        });
+    }
+
+    @FXML
+    public void submitAutoBid() {
+        if (item == null) {
+            AppPopup.error("Missing item");
+            return;
+        }
+
+        Double maxBidLimit = validateMaxBidLimit();
+        if (maxBidLimit == null) {
+            return;
+        }
+
+        bidService.autoBid(item.itemId, maxBidLimitField.getText(), new BaseResponseCallback() {
+            @Override
+            public void onSuccess(BaseResponse response) {
+                Platform.runLater(() -> {
+                    if (!active) {
+                        return;
+                    }
+                    autoBidStatusLabel.setText("Autobid: enabled, max bid limit = " + formatMoney(maxBidLimit));
+                    maxBidLimitField.clear();
+                    AppPopup.info(response.message);
+                });
+                if (active) {
+                    loadItemStatus();
+                    refreshBalance();
+                }
+            }
+
+            @Override
+            public void onError(String message) {
+                Platform.runLater(() -> {
+                    if (active) {
+                        autoBidStatusLabel.setText("Autobid: disabled");
+                        AppPopup.error(message);
+                    }
+                });
             }
         });
     }
@@ -197,6 +242,29 @@ public class BidderViewPage {
         }
 
         return true;
+    }
+
+    private Double validateMaxBidLimit() {
+        if (latestStatus == null) {
+            AppPopup.error("Auction status is still loading");
+            return null;
+        }
+
+        double maxBidLimit;
+        try {
+            maxBidLimit = Double.parseDouble(maxBidLimitField.getText());
+        } catch (NumberFormatException e) {
+            AppPopup.error("Max bid limit must be a valid number");
+            return null;
+        }
+
+        double minimumBid = minimumBid(latestStatus);
+        if (maxBidLimit < minimumBid) {
+            AppPopup.error("Max bid limit must be at least " + formatMoney(minimumBid));
+            return null;
+        }
+
+        return maxBidLimit;
     }
 
     private double minimumBid(ItemStatusResponse.ItemStatusData status) {

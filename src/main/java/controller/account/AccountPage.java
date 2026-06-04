@@ -30,8 +30,8 @@ public class AccountPage {
         refreshBalance();
     }
 
-    @FXML public void back() throws IOException {
-        SceneManager.changeContent("/fxml/dashboardTab.fxml");
+    @FXML public void back(ActionEvent event) throws IOException {
+        SceneManager.changeScene(event, "/fxml/framework.fxml");
     }
 
     @FXML public void add(){

@@ -1,0 +1,32 @@
+.nav-tab {
+    -fx-alignment: center-left;
+    -fx-background-color: transparent;
+    -fx-text-fill: #d8dde6;
+    -fx-font-weight: bold;
+    -fx-padding: 11 13;
+    -fx-background-radius: 8;
+    -fx-border-color: transparent;
+    -fx-border-width: 0 0 0 3;
+    -fx-border-radius: 8;
+    -fx-cursor: hand;
+}
+
+.nav-tab:hover {
+    -fx-background-color: #2a303a;
+    -fx-text-fill: white;
+}
+
+.nav-tab:pressed {
+    -fx-background-color: #3a4351;
+    -fx-translate-y: 1;
+}
+
+.nav-tab:selected {
+    -fx-background-color: #2f3642;
+    -fx-border-color: #5fca8a;
+    -fx-text-fill: white;
+}
+
+.nav-tab:selected:hover {
+    -fx-background-color: #343d4a;
+}

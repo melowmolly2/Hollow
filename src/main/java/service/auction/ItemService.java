@@ -47,6 +47,10 @@ public class ItemService {
 
     private void cancelItem(Long itemId, BaseResponseCallback callback, boolean allowRefresh) {
         if (TokenStorage.accessToken == null || TokenStorage.accessToken.isBlank()) {
+            if (canRefresh(allowRefresh)) {
+                refreshThen(() -> cancelItem(itemId, callback, false), callback::onError);
+                return;
+            }
             callback.onError("You must login first");
             return;
         }
@@ -65,7 +69,7 @@ public class ItemService {
                     return;
                 }
 
-                if (response.code() == 401 && allowRefresh) {
+                if (isAuthExpired(response) && allowRefresh) {
                     refreshThen(() -> cancelItem(itemId, callback, false), callback::onError);
                     return;
                 }
@@ -103,6 +107,14 @@ public class ItemService {
             boolean allowRefresh
     ) {
         if (TokenStorage.accessToken == null || TokenStorage.accessToken.isBlank()) {
+            if (canRefresh(allowRefresh)) {
+                refreshThen(
+                        () -> createItem(title, description, durationMinutesText, startingPriceText,
+                                bidIncrementText, buyItNowPriceText, callback, false),
+                        callback::onError
+                );
+                return;
+            }
             callback.onError("You must login first");
             return;
         }
@@ -162,7 +174,7 @@ public class ItemService {
                     return;
                 }
 
-                if (response.code() == 401 && allowRefresh) {
+                if (isAuthExpired(response) && allowRefresh) {
                     refreshThen(
                             () -> createItem(title, description, durationMinutesText, startingPriceText,
                                     bidIncrementText, buyItNowPriceText, callback, false),
@@ -193,6 +205,14 @@ public class ItemService {
                 onError.accept(message);
             }
         });
+    }
+
+    private boolean isAuthExpired(Response<?> response) {
+        return response.code() == 401 || response.code() == 403;
+    }
+
+    private boolean canRefresh(boolean allowRefresh) {
+        return allowRefresh && TokenStorage.refreshToken != null && !TokenStorage.refreshToken.isBlank();
     }
 
     public void getItems(int page, int size, ItemPageCallback callback) {
