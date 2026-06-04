@@ -25,6 +25,8 @@ import java.io.IOException;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
+import java.util.Map;
 
 public class BidderViewPage {
     @FXML private Label titleLabel;
@@ -36,6 +38,7 @@ public class BidderViewPage {
     @FXML private Label startTimeLabel;
     @FXML private Label endTimeLabel;
     @FXML private Label minimumBidLabel;
+    @FXML private Label lastBidLabel;
     @FXML private TextField bidAmountField;
     @FXML private TextField maxBidLimitField;
     @FXML private Label autoBidStatusLabel;
@@ -45,6 +48,7 @@ public class BidderViewPage {
     private final AccountService accountService = new AccountService();
     private final PriceStreamListener priceStreamListener = new PriceStreamListener();
     private final DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+    private static final Map<Long, Double> lastBidByItem = new HashMap<>();
 
     private ItemResponse item;
     private volatile boolean active;
@@ -55,6 +59,7 @@ public class BidderViewPage {
         active = true;
         titleLabel.setText(item.title);
         descriptionLabel.setText(item.description);
+        renderLastBid();
         loadItemStatus();
         startPriceStream();
     }
@@ -84,6 +89,8 @@ public class BidderViewPage {
                     if (!active) {
                         return;
                     }
+                    rememberLastBid(response);
+                    renderLastBid();
                     bidAmountField.clear();
                     AppPopup.info(response.message);
                 });
@@ -290,6 +297,24 @@ public class BidderViewPage {
 
     private String formatMoney(Double value) {
         return String.format("%.2f", safeMoney(value));
+    }
+
+    private void rememberLastBid(BidPostResponse response) {
+        if (item == null || item.itemId == null || response == null || response.bid == null
+                || response.bid.bidAmount == null) {
+            return;
+        }
+
+        lastBidByItem.put(item.itemId, response.bid.bidAmount);
+    }
+
+    private void renderLastBid() {
+        if (lastBidLabel == null || item == null || item.itemId == null) {
+            return;
+        }
+
+        Double lastBid = lastBidByItem.get(item.itemId);
+        lastBidLabel.setText(lastBid == null ? "Your last bid: None" : "Your last bid: " + formatMoney(lastBid));
     }
 
     private double safeMoney(Double value) {

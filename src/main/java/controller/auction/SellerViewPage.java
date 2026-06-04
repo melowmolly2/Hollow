@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
@@ -52,6 +53,8 @@ public class SellerViewPage {
 
     private ItemResponse item;
     private ItemStatusResponse.ItemStatusData latestStatus;
+    private final List<Double> observedBidAmounts = new ArrayList<>();
+    private boolean bidHistorySeeded;
 
     public void initialize() {
         editAuctionButton.setDisable(true);
@@ -69,7 +72,6 @@ public class SellerViewPage {
         titleLabel.setText(valueOrNone(item.title));
         descriptionLabel.setText(valueOrNone(item.description));
         loadItemStatus();
-        loadBidHistory();
         startPriceStream();
     }
 
@@ -77,6 +79,7 @@ public class SellerViewPage {
     public void back() throws IOException {
         priceStreamListener.stop();
         SceneManager.changeContent("/fxml/mySaleTab.fxml");
+        SceneManager.selectMySaleNavigation();
     }
 
     @FXML
@@ -98,7 +101,6 @@ public class SellerViewPage {
                 Platform.runLater(() -> {
                     AppPopup.info(response.message);
                     loadItemStatus();
-                    loadBidHistory();
                 });
             }
 
@@ -157,9 +159,10 @@ public class SellerViewPage {
         }
 
         priceStreamListener.start(item.itemId, price -> {
-            currentPriceLabel.setText("Current price: " + formatMoney(displayCurrentPrice(price)));
+            Double currentPrice = displayCurrentPrice(price);
+            currentPriceLabel.setText("Current price: " + formatMoney(currentPrice));
+            appendObservedBid(currentPrice);
             loadItemStatus();
-            loadBidHistory();
         });
     }
 
@@ -186,29 +189,93 @@ public class SellerViewPage {
         actionHelpLabel.setText(cancelable
                 ? "End Auction cancels this active auction through the backend."
                 : "End Auction is unavailable because this auction is not active.");
+
+        loadBidHistory();
     }
 
     private void renderBidHistory(BidHistoryResponse response) {
         bidHistoryChart.getData().clear();
 
-        if (response == null || response.entity == null || response.entity.content == null
-                || response.entity.content.isEmpty()) {
-            bidHistorySummaryLabel.setText("No bids yet");
+        double startingPrice = latestStatus == null ? 0.0 : safeMoney(latestStatus.startingPrice);
+        if (startingPrice <= 0) {
+            bidHistorySummaryLabel.setText("Waiting for starting price");
             return;
         }
 
-        List<BidHistoryResponse.BidData> bids = response.entity.content.stream()
-                .filter(bid -> bid.bidAmount != null && bid.time != null)
-                .sorted(Comparator.comparingLong(bid -> bid.time))
-                .toList();
+        if (response == null || response.entity == null || response.entity.content == null
+                || response.entity.content.isEmpty()) {
+            if (!bidHistorySeeded && observedBidAmounts.isEmpty()) {
+                bidHistorySummaryLabel.setText("No bids yet");
+            }
+            return;
+        }
+
+        List<BidHistoryResponse.BidData> bids = new ArrayList<>(response.entity.content.stream()
+                .filter(bid -> bid.bidAmount != null)
+                .toList());
+
+        if (bids.isEmpty()) {
+            bidHistorySummaryLabel.setText("No valid bid amounts");
+            return;
+        }
+
+        if (bids.stream().allMatch(bid -> bid.time != null)) {
+            bids.sort(Comparator.comparingLong(bid -> bid.time));
+        }
+
+        if (!bidHistorySeeded && observedBidAmounts.isEmpty()) {
+            observedBidAmounts.clear();
+        }
+        bids.forEach(bid -> addObservedBidAmount(safeMoney(bid.bidAmount)));
+        bidHistorySeeded = true;
+        renderObservedBidHistory(startingPrice);
+    }
+
+    private void appendObservedBid(Double bidAmount) {
+        if (bidAmount == null || latestStatus == null) {
+            return;
+        }
+
+        double startingPrice = safeMoney(latestStatus.startingPrice);
+        if (startingPrice <= 0 || safeMoney(bidAmount) <= startingPrice) {
+            return;
+        }
+
+        if (addObservedBidAmount(safeMoney(bidAmount))) {
+            renderObservedBidHistory(startingPrice);
+        }
+    }
+
+    private boolean addObservedBidAmount(double bidAmount) {
+        if (!observedBidAmounts.isEmpty()) {
+            double lastBidAmount = observedBidAmounts.get(observedBidAmounts.size() - 1);
+            if (Double.compare(lastBidAmount, bidAmount) == 0) {
+                return false;
+            }
+        }
+
+        observedBidAmounts.add(bidAmount);
+        return true;
+    }
+
+    private void renderObservedBidHistory(double startingPrice) {
+        bidHistoryChart.getData().clear();
+
+        if (observedBidAmounts.isEmpty()) {
+            bidHistorySummaryLabel.setText("No valid bid amounts");
+            return;
+        }
 
         XYChart.Series<String, Number> series = new XYChart.Series<>();
-        for (BidHistoryResponse.BidData bid : bids) {
-            series.getData().add(new XYChart.Data<>(formatChartTime(bid.time), safeMoney(bid.bidAmount)));
+        for (int index = 0; index < observedBidAmounts.size(); index++) {
+            double percentOfStartingPrice = observedBidAmounts.get(index) / startingPrice * 100.0;
+            series.getData().add(new XYChart.Data<>(String.valueOf(index + 1), percentOfStartingPrice));
         }
 
         bidHistoryChart.getData().add(series);
-        bidHistorySummaryLabel.setText(bids.size() + " bid" + (bids.size() == 1 ? "" : "s") + " shown");
+        int bidCount = observedBidAmounts.size();
+        bidHistorySummaryLabel.setText(bidCount + " bid" + (bidCount == 1 ? "" : "s")
+                + " shown, base " + formatMoney(startingPrice));
     }
 
     private boolean hasEnded(Long endTime) {
@@ -247,12 +314,4 @@ public class SellerViewPage {
         return timeFormatter.format(Instant.ofEpochMilli(epochMillis).atZone(ZoneId.systemDefault()));
     }
 
-    private String formatChartTime(Long epochMillis) {
-        if (epochMillis == null) {
-            return "N/A";
-        }
-
-        return DateTimeFormatter.ofPattern("HH:mm:ss")
-                .format(Instant.ofEpochMilli(epochMillis).atZone(ZoneId.systemDefault()));
-    }
 }

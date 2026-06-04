@@ -14,7 +14,7 @@ public class Framework {
     }
 
     @FXML public void browse() throws IOException {
-        SceneManager.changeContent("/fxml/browseAuctionTab.fxml");
+        SceneManager.changeContent("/fxml/browseTab.fxml");
     }
 
     @FXML public void mySale() {

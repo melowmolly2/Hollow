@@ -3,7 +3,6 @@
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ScrollPane?>
-<?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.FlowPane?>
 <?import javafx.scene.layout.HBox?>
@@ -18,16 +17,7 @@
       <VBox spacing="12.0" BorderPane.alignment="CENTER">
          <children>
             <Label text="Browse Auctions"
-                   style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #111827;" />
-            <HBox spacing="10.0">
-               <children>
-                  <TextField promptText="Search auction"
-                             prefWidth="320.0"
-                             style="-fx-background-radius: 5; -fx-padding: 9 11;" />
-                  <Button mnemonicParsing="false" text="Search"
-                          style="-fx-background-color: #20242c; -fx-text-fill: white; -fx-background-radius: 5; -fx-padding: 9 16;" />
-               </children>
-            </HBox>
+                    style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #111827;" />
          </children>
       </VBox>
    </top>

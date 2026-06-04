@@ -13,6 +13,7 @@ import java.util.Objects;
 
 public class SceneManager  {
     private static StackPane contentArea;
+    private static Runnable mySaleNavigationSelector;
 
     public static void changeScene(ActionEvent event, String fxml) throws IOException {
         Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
@@ -26,6 +27,16 @@ public class SceneManager  {
 
     public static void setContentArea(StackPane area) {
         contentArea = area;
+    }
+
+    public static void setMySaleNavigationSelector(Runnable selector) {
+        mySaleNavigationSelector = selector;
+    }
+
+    public static void selectMySaleNavigation() {
+        if (mySaleNavigationSelector != null) {
+            mySaleNavigationSelector.run();
+        }
     }
 
     public static void changeContent(String fxml) throws IOException {

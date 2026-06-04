@@ -21,7 +21,7 @@
          <children>
             <ToggleButton maxWidth="Infinity" mnemonicParsing="false" onAction="#dashboard" selected="true" styleClass="nav-tab" text="Dashboard" toggleGroup="$navGroup" />
             <ToggleButton maxWidth="Infinity" mnemonicParsing="false" onAction="#browse" styleClass="nav-tab" text="Browse Auctions" toggleGroup="$navGroup" />
-            <ToggleButton maxWidth="Infinity" mnemonicParsing="false" onAction="#mySale" styleClass="nav-tab" text="My Sales" toggleGroup="$navGroup" />
+            <ToggleButton fx:id="mySaleNavButton" maxWidth="Infinity" mnemonicParsing="false" onAction="#mySale" styleClass="nav-tab" text="My Sales" toggleGroup="$navGroup" />
             <ToggleButton maxWidth="Infinity" mnemonicParsing="false" onAction="#watchlist" styleClass="nav-tab" text="Watchlist" toggleGroup="$navGroup" />
          </children>
       </VBox>
@@ -39,6 +39,7 @@
                </children>
             </HBox>
             <Region HBox.hgrow="ALWAYS" />
+            <Label fx:id="usernameLabel" style="-fx-text-fill: #111827; -fx-font-size: 13px; -fx-font-weight: bold;" text="User: Guest" />
             <Label fx:id="balanceLabel" style="-fx-text-fill: #4b5563; -fx-font-size: 13px;" text="Your balance: 0.00" />
             <Button mnemonicParsing="false" onAction="#account" style="-fx-background-color: #1f6f43; -fx-text-fill: white; -fx-background-radius: 5; -fx-padding: 8 14;" text="Account" />
          </children>
