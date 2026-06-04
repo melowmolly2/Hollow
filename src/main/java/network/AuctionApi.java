@@ -62,7 +62,8 @@ public interface AuctionApi {
     );
 
     @GET("/bids/{itemId}/bids")
-    Call<BidHistoryResponse> getBidHistory(@Path("itemId") Long itemId,
+    Call<BidHistoryResponse> getBidHistory(@Header("Authorization") String authorization,
+                                           @Path("itemId") Long itemId,
                                            @Query("page") int page,
                                            @Query("size") int size);
 
