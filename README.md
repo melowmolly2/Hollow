@@ -1,5 +1,5 @@
 # Ứng dụng Đấu giá Trực tuyến (Hollow)
-![](assets\banner.png)
+![](assets/banner.png)
 ## 1. Mô tả bài toán và phạm vi hệ thống
 Hollow là một ứng dụng Desktop (JavaFX) mô phỏng một hệ thống đấu giá trực tuyến. Hệ thống cho phép người dùng đăng ký, đăng nhập, duyệt các phiên đấu giá đang diễn ra, đặt giá cho các vật phẩm, và theo dõi trạng thái đấu giá theo thời gian thực. Ngoài ra, người dùng cũng có thể đóng vai trò là người bán để tạo các phiên đấu giá mới và quản lý các vật phẩm mình đang bán. Phạm vi hệ thống bao gồm một ứng dụng Client (JavaFX) giao tiếp với một máy chủ Server (backend cung cấp REST API).
 
