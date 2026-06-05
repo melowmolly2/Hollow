@@ -4,11 +4,13 @@ import controller.app.SceneManager;
 import dto.auction.ItemResponse;
 import dto.auction.ItemStatusResponse;
 import dto.auction.SellerListingResponse;
+import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
-import javafx.scene.control.ListView;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
 import model.TokenStorage;
 import service.auction.ItemService;
 import service.auction.ItemStatusCallback;
@@ -26,13 +28,29 @@ public class MySaleTab {
     @FXML private Label completedSalesLabel;
     @FXML private Label totalEarnedLabel;
     @FXML private Label statusLabel;
-    @FXML private ListView<String> salesHistoryList;
+    @FXML private TableView<SaleRow> salesHistoryTable;
+    @FXML private TableColumn<SaleRow, String> saleTitleColumn;
+    @FXML private TableColumn<SaleRow, String> saleStateColumn;
+    @FXML private TableColumn<SaleRow, String> saleWinnerColumn;
+    @FXML private TableColumn<SaleRow, String> saleEarnedColumn;
+    @FXML private TableColumn<SaleRow, String> saleEndedColumn;
 
     private final ItemService itemService = new ItemService();
     private final DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
     public void initialize() {
+        configureSalesHistoryTable();
         refresh();
+    }
+
+    private void configureSalesHistoryTable() {
+        saleTitleColumn.setCellValueFactory(cell -> new ReadOnlyStringWrapper(cell.getValue().title));
+        saleStateColumn.setCellValueFactory(cell -> new ReadOnlyStringWrapper(cell.getValue().state));
+        saleWinnerColumn.setCellValueFactory(cell -> new ReadOnlyStringWrapper(cell.getValue().winner));
+        saleEarnedColumn.setCellValueFactory(cell -> new ReadOnlyStringWrapper(formatMoney(cell.getValue().earned)));
+        saleEndedColumn.setCellValueFactory(cell -> new ReadOnlyStringWrapper(formatTime(cell.getValue().endTime)));
+        salesHistoryTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+        salesHistoryTable.setPlaceholder(new Label("No past auctions yet."));
     }
 
     @FXML
@@ -45,14 +63,16 @@ public class MySaleTab {
         completedSalesLabel.setText("-");
         totalEarnedLabel.setText("-");
         statusLabel.setText("Loading sales history...");
-        salesHistoryList.setItems(FXCollections.observableArrayList("Loading sales history..."));
+        salesHistoryTable.setItems(FXCollections.observableArrayList());
+        salesHistoryTable.setPlaceholder(new Label("Loading sales history..."));
 
         String username = TokenStorage.username;
         if (username == null || username.isBlank()) {
             completedSalesLabel.setText("0");
             totalEarnedLabel.setText("0.00");
             statusLabel.setText("Login required");
-            salesHistoryList.setItems(FXCollections.observableArrayList("Login to view your sales history."));
+            salesHistoryTable.setItems(FXCollections.observableArrayList());
+            salesHistoryTable.setPlaceholder(new Label("Login to view your sales history."));
             return;
         }
 
@@ -83,7 +103,8 @@ public class MySaleTab {
                     completedSalesLabel.setText("N/A");
                     totalEarnedLabel.setText("N/A");
                     statusLabel.setText("Unable to load seller listings");
-                    salesHistoryList.setItems(FXCollections.observableArrayList("Unable to load sales history."));
+                    salesHistoryTable.setItems(FXCollections.observableArrayList());
+                    salesHistoryTable.setPlaceholder(new Label("Unable to load sales history."));
                 });
             }
         });
@@ -181,25 +202,13 @@ public class MySaleTab {
 
         if (sortedRows.isEmpty()) {
             statusLabel.setText("No past auctions");
-            salesHistoryList.setItems(FXCollections.observableArrayList("No past auctions yet."));
+            salesHistoryTable.setItems(FXCollections.observableArrayList());
+            salesHistoryTable.setPlaceholder(new Label("No past auctions yet."));
             return;
         }
 
-        salesHistoryList.setItems(FXCollections.observableArrayList(sortedRows.stream()
-                .map(this::formatRow)
-                .toList()));
+        salesHistoryTable.setItems(FXCollections.observableArrayList(sortedRows));
         statusLabel.setText("Sales history loaded");
-    }
-
-    private String formatRow(SaleRow row) {
-        if ("Sold".equals(row.state)) {
-            return row.title + " | Sold to: " + row.winner
-                    + " | Earned: " + formatMoney(row.earned)
-                    + " | Ended: " + formatTime(row.endTime);
-        }
-        return row.title + " | " + row.state
-                + " | Earned: 0.00"
-                + " | Ended: " + formatTime(row.endTime);
     }
 
     private String formatMoney(double value) {

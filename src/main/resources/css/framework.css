@@ -87,8 +87,26 @@
     -fx-padding: 18;
 }
 
-.history-list {
+.history-list,
+.history-table {
     -fx-background-color: transparent;
     -fx-border-color: #e5e7eb;
     -fx-border-radius: 8;
+}
+
+.history-table .column-header-background {
+    -fx-background-color: #f3f4f6;
+}
+
+.history-table .column-header,
+.history-table .filler {
+    -fx-background-color: transparent;
+    -fx-border-color: #e5e7eb;
+    -fx-border-width: 0 1 1 0;
+}
+
+.history-table .table-cell {
+    -fx-border-color: #eef2f7;
+    -fx-border-width: 0 1 1 0;
+    -fx-padding: 9 10;
 }

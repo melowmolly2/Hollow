@@ -54,13 +54,19 @@ public class BidderViewPage {
     private ItemStatusResponse.ItemStatusData latestStatus;
     private Long observedEndTime;
     private boolean endPopupShown;
+    private boolean auctionEnded;
+    private boolean bidSubmitting;
+    private boolean autoBidSubmitting;
 
     public void setItem(ItemResponse item) {
         this.item = item;
         active = true;
         observedEndTime = null;
         endPopupShown = false;
-        setBiddingDisabled(false);
+        auctionEnded = false;
+        bidSubmitting = false;
+        autoBidSubmitting = false;
+        refreshBiddingControls();
         titleLabel.setText(item.title);
         descriptionLabel.setText(item.description);
         renderLastBid();
@@ -82,14 +88,19 @@ public class BidderViewPage {
             return;
         }
 
-        if (!validateBidAmount()) {
+        Double bidAmount = validateBidAmount();
+        if (bidAmount == null) {
             return;
         }
 
-        bidService.placeBid(item.itemId, bidAmountField.getText(), new BidCallback() {
+        bidSubmitting = true;
+        refreshBiddingControls();
+        bidService.placeBid(item.itemId, String.valueOf(bidAmount), new BidCallback() {
             @Override
             public void onSuccess(BidPostResponse response) {
                 Platform.runLater(() -> {
+                    bidSubmitting = false;
+                    refreshBiddingControls();
                     if (!active) {
                         return;
                     }
@@ -105,9 +116,14 @@ public class BidderViewPage {
 
             @Override
             public void onError(String message) {
-                if (active) {
-                    AppPopup.error(message);
-                }
+                Platform.runLater(() -> {
+                    bidSubmitting = false;
+                    refreshBiddingControls();
+                    if (active) {
+                        handleAuthError(message);
+                        AppPopup.error(message);
+                    }
+                });
             }
         });
     }
@@ -124,10 +140,14 @@ public class BidderViewPage {
             return;
         }
 
-        bidService.autoBid(item.itemId, maxBidLimitField.getText(), new BaseResponseCallback() {
+        autoBidSubmitting = true;
+        refreshBiddingControls();
+        bidService.autoBid(item.itemId, String.valueOf(maxBidLimit), new BaseResponseCallback() {
             @Override
             public void onSuccess(BaseResponse response) {
                 Platform.runLater(() -> {
+                    autoBidSubmitting = false;
+                    refreshBiddingControls();
                     if (!active) {
                         return;
                     }
@@ -143,7 +163,10 @@ public class BidderViewPage {
             @Override
             public void onError(String message) {
                 Platform.runLater(() -> {
+                    autoBidSubmitting = false;
+                    refreshBiddingControls();
                     if (active) {
+                        handleAuthError(message);
                         autoBidStatusLabel.setText("Autobid: disabled");
                         AppPopup.error(message);
                     }
@@ -224,9 +247,9 @@ public class BidderViewPage {
     }
 
     private void renderEndedState(ItemStatusResponse.ItemStatusData status) {
-        boolean ended = isEnded(status);
-        setBiddingDisabled(ended);
-        if (!ended || endPopupShown) {
+        auctionEnded = isEnded(status);
+        refreshBiddingControls();
+        if (!auctionEnded || endPopupShown) {
             return;
         }
 
@@ -247,34 +270,35 @@ public class BidderViewPage {
         return timeEnded || statusEnded;
     }
 
-    private void setBiddingDisabled(boolean disabled) {
-        bidAmountField.setDisable(disabled);
-        maxBidLimitField.setDisable(disabled);
-        confirmBidButton.setDisable(disabled);
-        autoBidButton.setDisable(disabled);
+    private void refreshBiddingControls() {
+        bidAmountField.setDisable(auctionEnded || bidSubmitting);
+        confirmBidButton.setDisable(auctionEnded || bidSubmitting);
+        confirmBidButton.setText(bidSubmitting ? "Submitting..." : "Confirm");
+
+        maxBidLimitField.setDisable(auctionEnded || autoBidSubmitting);
+        autoBidButton.setDisable(auctionEnded || autoBidSubmitting);
+        autoBidButton.setText(autoBidSubmitting ? "Setting..." : "Set auto-bid");
     }
 
-    private boolean validateBidAmount() {
+    private Double validateBidAmount() {
         if (latestStatus == null) {
             AppPopup.error("Auction status is still loading");
-            return false;
+            return null;
         }
 
-        double bidAmount;
-        try {
-            bidAmount = Double.parseDouble(bidAmountField.getText());
-        } catch (NumberFormatException e) {
-            AppPopup.error("Bid amount must be a valid number");
-            return false;
+        Double bidAmount = parseMoney(bidAmountField, "Bid amount must be a valid number");
+        if (bidAmount == null) {
+            return null;
         }
 
         double minimumBid = minimumBid(latestStatus);
         if (bidAmount < minimumBid) {
             AppPopup.error("Bid amount must be at least " + formatMoney(minimumBid));
-            return false;
+            bidAmountField.requestFocus();
+            return null;
         }
 
-        return true;
+        return bidAmount;
     }
 
     private Double validateMaxBidLimit() {
@@ -283,21 +307,48 @@ public class BidderViewPage {
             return null;
         }
 
-        double maxBidLimit;
-        try {
-            maxBidLimit = Double.parseDouble(maxBidLimitField.getText());
-        } catch (NumberFormatException e) {
-            AppPopup.error("Max bid limit must be a valid number");
+        Double maxBidLimit = parseMoney(maxBidLimitField, "Max bid limit must be a valid number");
+        if (maxBidLimit == null) {
             return null;
         }
 
         double minimumBid = minimumBid(latestStatus);
         if (maxBidLimit < minimumBid) {
             AppPopup.error("Max bid limit must be at least " + formatMoney(minimumBid));
+            maxBidLimitField.requestFocus();
             return null;
         }
 
         return maxBidLimit;
+    }
+
+    private Double parseMoney(TextField field, String message) {
+        String value = field.getText() == null ? "" : field.getText().trim();
+        if (value.isBlank()) {
+            AppPopup.error(message);
+            field.requestFocus();
+            return null;
+        }
+
+        try {
+            double parsed = Double.parseDouble(value);
+            if (!Double.isFinite(parsed)) {
+                AppPopup.error(message);
+                field.requestFocus();
+                return null;
+            }
+            return parsed;
+        } catch (NumberFormatException e) {
+            AppPopup.error(message);
+            field.requestFocus();
+            return null;
+        }
+    }
+
+    private void handleAuthError(String message) {
+        if (message != null && message.toLowerCase().contains("session expired")) {
+            TokenStorage.clear();
+        }
     }
 
     private double minimumBid(ItemStatusResponse.ItemStatusData status) {

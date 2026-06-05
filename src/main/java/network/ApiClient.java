@@ -5,7 +5,8 @@ import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 public class ApiClient {
-    public static final String BASE_URL = "http://26.106.51.93:8080/";
+    private static final String DEFAULT_BASE_URL = "http://26.106.51.93:8080/";
+    public static final String BASE_URL = normalizeBaseUrl(resolveBaseUrl());
 
     private static final OkHttpClient PUBLIC_CLIENT = new OkHttpClient.Builder()
             .build();
@@ -26,5 +27,24 @@ public class ApiClient {
             .client(client)
             .addConverterFactory(GsonConverterFactory.create())
             .build();
+    }
+
+    private static String resolveBaseUrl() {
+        String propertyValue = System.getProperty("auction.apiBaseUrl");
+        if (propertyValue != null && !propertyValue.isBlank()) {
+            return propertyValue;
+        }
+
+        String environmentValue = System.getenv("AUCTION_API_BASE_URL");
+        if (environmentValue != null && !environmentValue.isBlank()) {
+            return environmentValue;
+        }
+
+        return DEFAULT_BASE_URL;
+    }
+
+    private static String normalizeBaseUrl(String baseUrl) {
+        String trimmed = baseUrl.trim();
+        return trimmed.endsWith("/") ? trimmed : trimmed + "/";
     }
 }

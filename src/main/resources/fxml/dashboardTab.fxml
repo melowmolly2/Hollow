@@ -2,8 +2,9 @@
 
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
-<?import javafx.scene.control.ListView?>
 <?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
@@ -80,9 +81,15 @@
                         <Label fx:id="statusLabel" text="Loading dashboard..." styleClass="muted-label" />
                      </children>
                   </HBox>
-                  <ListView fx:id="winningHistoryList"
-                            prefHeight="250.0"
-                            styleClass="history-list" />
+                  <TableView fx:id="winningHistoryTable"
+                             prefHeight="250.0"
+                             styleClass="history-table">
+                     <columns>
+                        <TableColumn fx:id="winTitleColumn" prefWidth="310.0" text="Auction" />
+                        <TableColumn fx:id="winBidColumn" prefWidth="150.0" text="Winning Bid" />
+                        <TableColumn fx:id="winTimeColumn" prefWidth="210.0" text="Bid Time" />
+                     </columns>
+                  </TableView>
                </children>
             </VBox>
          </content>

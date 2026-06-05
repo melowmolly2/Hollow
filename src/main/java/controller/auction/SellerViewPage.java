@@ -92,6 +92,7 @@ public class SellerViewPage {
         }
 
         endAuctionButton.setDisable(true);
+        endAuctionButton.setText("Ending...");
         itemService.cancelItem(item.itemId, new BaseResponseCallback() {
             @Override
             public void onSuccess(BaseResponse response) {
@@ -100,6 +101,7 @@ public class SellerViewPage {
                         return;
                     }
                     AppPopup.info(response.message);
+                    endAuctionButton.setText("End Auction");
                     loadItemStatus();
                 });
             }
@@ -111,6 +113,7 @@ public class SellerViewPage {
                         return;
                     }
                     endAuctionButton.setDisable(false);
+                    endAuctionButton.setText("End Auction");
                     AppPopup.error(message);
                 });
             }
@@ -207,6 +210,7 @@ public class SellerViewPage {
 
         boolean cancelable = "ACTIVE".equalsIgnoreCase(itemStatus) && !hasEnded(status.endTime);
         endAuctionButton.setDisable(!cancelable);
+        endAuctionButton.setText("End Auction");
         actionHelpLabel.setText(cancelable
                 ? "End Auction cancels this active auction through the backend."
                 : "End Auction is unavailable because this auction is not active.");

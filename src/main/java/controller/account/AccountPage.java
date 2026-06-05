@@ -6,6 +6,7 @@ import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import model.AccountSession;
@@ -22,6 +23,7 @@ import java.io.IOException;
 public class AccountPage {
     @FXML private Label balanceLabel;
     @FXML private TextField addField;
+    @FXML private Button addButton;
 
     private final AccountService accountService = new AccountService();
     private final AuthService authService = new AuthService();
@@ -36,10 +38,17 @@ public class AccountPage {
     }
 
     @FXML public void add(){
-        accountService.deposit(addField.getText(), new BalanceCallback() {
+        Double amount = validateDepositAmount();
+        if (amount == null) {
+            return;
+        }
+
+        setDepositing(true);
+        accountService.deposit(String.valueOf(amount), new BalanceCallback() {
             @Override
             public void onSuccess(BalanceResponse response) {
                 Platform.runLater(() -> {
+                    setDepositing(false);
                     AccountSession.setBalance(response.balance);
                     addField.clear();
                     AppPopup.info(response.message);
@@ -48,7 +57,10 @@ public class AccountPage {
 
             @Override
             public void onError(String message) {
-                AppPopup.error(message);
+                Platform.runLater(() -> {
+                    setDepositing(false);
+                    AppPopup.error(message);
+                });
             }
         });
     }
@@ -88,6 +100,42 @@ public class AccountPage {
                 AppPopup.error(message);
             }
         });
+    }
+
+    private Double validateDepositAmount() {
+        String value = addField.getText() == null ? "" : addField.getText().trim();
+        if (value.isBlank()) {
+            AppPopup.error("Amount is required");
+            addField.requestFocus();
+            return null;
+        }
+
+        double amount;
+        try {
+            amount = Double.parseDouble(value);
+        } catch (NumberFormatException e) {
+            AppPopup.error("Amount must be a valid number");
+            addField.requestFocus();
+            return null;
+        }
+
+        if (!Double.isFinite(amount)) {
+            AppPopup.error("Amount must be a valid number");
+            addField.requestFocus();
+            return null;
+        }
+        if (amount <= 0) {
+            AppPopup.error("Amount must be positive");
+            addField.requestFocus();
+            return null;
+        }
+
+        return amount;
+    }
+
+    private void setDepositing(boolean depositing) {
+        addButton.setDisable(depositing);
+        addButton.setText(depositing ? "Adding..." : "Add");
     }
 
 }

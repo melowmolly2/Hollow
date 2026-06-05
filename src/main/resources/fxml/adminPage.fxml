@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox prefHeight="760.0"
+      prefWidth="980.0"
+      spacing="16.0"
+      style="-fx-background-color: #f6f7f9; -fx-padding: 28;"
+      xmlns="http://javafx.com/javafx/25"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="controller.admin.AdminPage">
+   <children>
+      <HBox alignment="CENTER_LEFT" spacing="14.0">
+         <children>
+            <VBox spacing="3.0" HBox.hgrow="ALWAYS">
+               <children>
+                  <Label text="Admin Console"
+                         style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #111827;" />
+                  <Label text="Manage users and auctions from one place."
+                         style="-fx-font-size: 13px; -fx-text-fill: #6b7280;" />
+               </children>
+            </VBox>
+            <Button fx:id="logoutButton"
+                    mnemonicParsing="false"
+                    onAction="#logout"
+                    text="Logout"
+                    style="-fx-background-color: #991b1b; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5; -fx-padding: 9 16;" />
+         </children>
+      </HBox>
+
+      <GridPane hgap="16.0" vgap="16.0">
+         <columnConstraints>
+            <ColumnConstraints hgrow="ALWAYS" minWidth="260.0" percentWidth="33.3" />
+            <ColumnConstraints hgrow="ALWAYS" minWidth="260.0" percentWidth="33.3" />
+            <ColumnConstraints hgrow="ALWAYS" minWidth="260.0" percentWidth="33.3" />
+         </columnConstraints>
+         <children>
+            <VBox spacing="12.0"
+                  style="-fx-background-color: white; -fx-background-radius: 10; -fx-border-color: #e5e7eb; -fx-border-radius: 10; -fx-padding: 20;"
+                  GridPane.columnIndex="0">
+               <children>
+                  <Label text="Ban user"
+                         style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #111827;" />
+                  <Label text="Disable a user account by username."
+                         wrapText="true"
+                         style="-fx-text-fill: #6b7280;" />
+                  <Separator />
+                  <Label text="Username"
+                         style="-fx-text-fill: #4b5563;" />
+                  <TextField fx:id="banUsernameField"
+                             promptText="Example: bidder01"
+                             style="-fx-background-radius: 5; -fx-padding: 9 11;" />
+                  <Region VBox.vgrow="ALWAYS" />
+                  <Button fx:id="banButton"
+                          maxWidth="Infinity"
+                          mnemonicParsing="false"
+                          onAction="#banUser"
+                          text="Ban"
+                          style="-fx-background-color: #991b1b; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5; -fx-padding: 10 14;" />
+               </children>
+            </VBox>
+
+            <VBox spacing="12.0"
+                  style="-fx-background-color: white; -fx-background-radius: 10; -fx-border-color: #e5e7eb; -fx-border-radius: 10; -fx-padding: 20;"
+                  GridPane.columnIndex="1">
+               <children>
+                  <Label text="Unban user"
+                         style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #111827;" />
+                  <Label text="Restore a user account. Backend requires a password for this action."
+                         wrapText="true"
+                         style="-fx-text-fill: #6b7280;" />
+                  <Separator />
+                  <Label text="Username"
+                         style="-fx-text-fill: #4b5563;" />
+                  <TextField fx:id="unbanUsernameField"
+                             promptText="Example: bidder01"
+                             style="-fx-background-radius: 5; -fx-padding: 9 11;" />
+                  <Label text="Password"
+                         style="-fx-text-fill: #4b5563;" />
+                  <PasswordField fx:id="unbanPasswordField"
+                                 promptText="Password required by backend"
+                                 style="-fx-background-radius: 5; -fx-padding: 9 11;" />
+                  <Region VBox.vgrow="ALWAYS" />
+                  <Button fx:id="unbanButton"
+                          maxWidth="Infinity"
+                          mnemonicParsing="false"
+                          onAction="#unbanUser"
+                          text="Unban"
+                          style="-fx-background-color: #1f6f43; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5; -fx-padding: 10 14;" />
+               </children>
+            </VBox>
+
+            <VBox spacing="12.0"
+                  style="-fx-background-color: white; -fx-background-radius: 10; -fx-border-color: #e5e7eb; -fx-border-radius: 10; -fx-padding: 20;"
+                  GridPane.columnIndex="2">
+               <children>
+                  <Label text="End auction"
+                         style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #111827;" />
+                  <Label text="Cancel an active auction by item id."
+                         wrapText="true"
+                         style="-fx-text-fill: #6b7280;" />
+                  <Separator />
+                  <Label text="Item id"
+                         style="-fx-text-fill: #4b5563;" />
+                  <TextField fx:id="endAuctionItemIdField"
+                             promptText="Example: 12"
+                             style="-fx-background-radius: 5; -fx-padding: 9 11;" />
+                  <Region VBox.vgrow="ALWAYS" />
+                  <Button fx:id="endAuctionButton"
+                          maxWidth="Infinity"
+                          mnemonicParsing="false"
+                          onAction="#endAuction"
+                          text="End auction"
+                          style="-fx-background-color: #b45309; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5; -fx-padding: 10 14;" />
+               </children>
+            </VBox>
+         </children>
+      </GridPane>
+
+      <GridPane hgap="16.0" vgap="16.0" VBox.vgrow="ALWAYS">
+         <columnConstraints>
+            <ColumnConstraints hgrow="ALWAYS" minWidth="420.0" percentWidth="100.0" />
+         </columnConstraints>
+         <children>
+            <VBox spacing="10.0"
+                  style="-fx-background-color: white; -fx-background-radius: 10; -fx-border-color: #e5e7eb; -fx-border-radius: 10; -fx-padding: 16;"
+                  GridPane.columnIndex="0"
+                  GridPane.vgrow="ALWAYS">
+               <children>
+                  <HBox alignment="CENTER_LEFT" spacing="8.0">
+                     <children>
+                        <VBox spacing="2.0" HBox.hgrow="ALWAYS">
+                           <children>
+                              <Label text="Active auctions"
+                                     style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #111827;" />
+                              <Label fx:id="itemTableStatusLabel"
+                                     text="Loading active auctions..."
+                                     style="-fx-font-size: 12px; -fx-text-fill: #6b7280;" />
+                           </children>
+                        </VBox>
+                        <Button fx:id="refreshItemsButton"
+                                mnemonicParsing="false"
+                                onAction="#refreshItems"
+                                text="Refresh"
+                                style="-fx-background-radius: 5; -fx-padding: 7 12;" />
+                     </children>
+                  </HBox>
+                  <TableView fx:id="itemTable" VBox.vgrow="ALWAYS">
+                     <columns>
+                        <TableColumn fx:id="itemIdColumn" prefWidth="70.0" text="ID" />
+                        <TableColumn fx:id="itemTitleColumn" prefWidth="145.0" text="Title" />
+                        <TableColumn fx:id="itemSellerColumn" prefWidth="120.0" text="Seller" />
+                        <TableColumn fx:id="itemDescriptionColumn" prefWidth="220.0" text="Description" />
+                     </columns>
+                  </TableView>
+               </children>
+            </VBox>
+         </children>
+      </GridPane>
+   </children>
+</VBox>

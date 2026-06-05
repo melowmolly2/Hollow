@@ -36,7 +36,7 @@
                   <TextField fx:id="addField" promptText="Amount"
                              prefWidth="210.0"
                              style="-fx-background-radius: 5; -fx-padding: 9 11;" />
-                  <Button mnemonicParsing="false" onAction="#add" text="Add"
+                  <Button fx:id="addButton" mnemonicParsing="false" onAction="#add" text="Add"
                           style="-fx-background-color: #1f6f43; -fx-text-fill: white; -fx-background-radius: 5; -fx-padding: 9 16;" />
                </children>
             </HBox>

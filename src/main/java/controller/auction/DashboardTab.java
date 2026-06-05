@@ -6,11 +6,13 @@ import dto.auction.ItemResponse;
 import dto.auction.ItemStatusResponse;
 import dto.auction.MyWinsResponse;
 import dto.auction.SellerListingResponse;
+import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
-import javafx.scene.control.ListView;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
 import model.TokenStorage;
 import service.auction.BidService;
 import service.auction.ItemPageCallback;
@@ -31,14 +33,26 @@ public class DashboardTab {
     @FXML private Label yourActiveAuctionsLabel;
     @FXML private Label yourWinsLabel;
     @FXML private Label statusLabel;
-    @FXML private ListView<String> winningHistoryList;
+    @FXML private TableView<WinRow> winningHistoryTable;
+    @FXML private TableColumn<WinRow, String> winTitleColumn;
+    @FXML private TableColumn<WinRow, String> winBidColumn;
+    @FXML private TableColumn<WinRow, String> winTimeColumn;
 
     private final ItemService itemService = new ItemService();
     private final BidService bidService = new BidService();
     private final DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
     public void initialize() {
+        configureWinningHistoryTable();
         refresh();
+    }
+
+    private void configureWinningHistoryTable() {
+        winTitleColumn.setCellValueFactory(cell -> new ReadOnlyStringWrapper(cell.getValue().title));
+        winBidColumn.setCellValueFactory(cell -> new ReadOnlyStringWrapper(cell.getValue().bidAmount));
+        winTimeColumn.setCellValueFactory(cell -> new ReadOnlyStringWrapper(cell.getValue().bidTime));
+        winningHistoryTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+        winningHistoryTable.setPlaceholder(new Label("No winning history yet."));
     }
 
     @FXML
@@ -46,7 +60,8 @@ public class DashboardTab {
         ongoingAuctionsLabel.setText("-");
         yourActiveAuctionsLabel.setText("-");
         yourWinsLabel.setText("-");
-        winningHistoryList.setItems(FXCollections.observableArrayList("Loading winning history..."));
+        winningHistoryTable.setItems(FXCollections.observableArrayList());
+        winningHistoryTable.setPlaceholder(new Label("Loading winning history..."));
         statusLabel.setText("Loading dashboard...");
 
         loadOngoingAuctions();
@@ -178,7 +193,8 @@ public class DashboardTab {
             public void onError(String message) {
                 Platform.runLater(() -> {
                     yourWinsLabel.setText("N/A");
-                    winningHistoryList.setItems(FXCollections.observableArrayList("Unable to load winning history"));
+                    winningHistoryTable.setItems(FXCollections.observableArrayList());
+                    winningHistoryTable.setPlaceholder(new Label("Unable to load winning history"));
                     statusLabel.setText("Unable to load winning history");
                 });
             }
@@ -193,25 +209,29 @@ public class DashboardTab {
         yourWinsLabel.setText(String.valueOf(wins.size()));
 
         if (wins.isEmpty()) {
-            winningHistoryList.setItems(FXCollections.observableArrayList("No winning history yet."));
+            winningHistoryTable.setItems(FXCollections.observableArrayList());
+            winningHistoryTable.setPlaceholder(new Label("No winning history yet."));
             statusLabel.setText("Dashboard loaded");
             return;
         }
 
-        List<String> rows = wins.stream()
-                .map(this::formatWin)
+        List<WinRow> rows = wins.stream()
+                .map(this::toWinRow)
                 .toList();
-        winningHistoryList.setItems(FXCollections.observableArrayList(rows));
+        winningHistoryTable.setItems(FXCollections.observableArrayList(rows));
         statusLabel.setText("Dashboard loaded");
     }
 
-    private String formatWin(MyWinsResponse.WinData win) {
+    private WinRow toWinRow(MyWinsResponse.WinData win) {
         String title = win == null || win.item == null || isBlank(win.item.title)
                 ? "Untitled auction"
                 : win.item.title;
         BidHistoryResponse.BidData bid = win == null ? null : win.bid;
-        return title + " | Winning bid: " + formatMoney(bid == null ? null : bid.bidAmount)
-                + " | " + formatTime(bid == null ? null : bid.time);
+        return new WinRow(
+                title,
+                formatMoney(bid == null ? null : bid.bidAmount),
+                formatTime(bid == null ? null : bid.time)
+        );
     }
 
     private String formatMoney(Double value) {
@@ -227,5 +247,17 @@ public class DashboardTab {
 
     private boolean isBlank(String value) {
         return value == null || value.isBlank();
+    }
+
+    private static class WinRow {
+        private final String title;
+        private final String bidAmount;
+        private final String bidTime;
+
+        private WinRow(String title, String bidAmount, String bidTime) {
+            this.title = title;
+            this.bidAmount = bidAmount;
+            this.bidTime = bidTime;
+        }
     }
 }

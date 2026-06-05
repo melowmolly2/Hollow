@@ -25,7 +25,7 @@
             <Label text="Password" style="-fx-text-fill: #4b5563;" />
             <PasswordField fx:id="password" promptText="Enter password"
                            style="-fx-background-radius: 5; -fx-padding: 9 11;" />
-            <Button maxWidth="Infinity" mnemonicParsing="false" onAction="#submit" text="Submit"
+            <Button fx:id="submitButton" maxWidth="Infinity" mnemonicParsing="false" onAction="#submit" text="Submit"
                     style="-fx-background-color: #1f6f43; -fx-text-fill: white; -fx-background-radius: 5; -fx-padding: 10 14;" />
             <Button maxWidth="Infinity" mnemonicParsing="false" onAction="#back" text="Back"
                     style="-fx-background-color: transparent; -fx-text-fill: #4b5563;" />

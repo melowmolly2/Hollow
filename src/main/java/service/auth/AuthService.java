@@ -1,14 +1,19 @@
 package service.auth;
 
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import dto.auth.LoginRequest;
 import dto.auth.RegisterRequest;
 import dto.auth.AuthResponse;
 import dto.common.BaseResponse;
 import network.ApiClient;
 import model.TokenStorage;
+import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
+
+import java.io.IOException;
 
 public class AuthService {
     public void logout(LogoutCallback callback) {
@@ -65,7 +70,7 @@ public class AuthService {
                     return;
                 }
 
-                callback.onError("Login failed. HTTP code: " + response.code());
+                callback.onError(errorMessage(response, "Login failed"));
             }
 
             @Override
@@ -100,7 +105,7 @@ public class AuthService {
                     return;
                 }
 
-                callback.onError("Register failed. HTTP code: " + response.code());
+                callback.onError(errorMessage(response, "Register failed"));
             }
 
             @Override
@@ -110,4 +115,34 @@ public class AuthService {
         });
     }
 
+    private String errorMessage(Response<?> response, String fallback) {
+        String message = readMessage(response.errorBody());
+        if (message != null && !message.isBlank()) {
+            return message;
+        }
+
+        return fallback + ". HTTP code: " + response.code();
+    }
+
+    private String readMessage(ResponseBody errorBody) {
+        if (errorBody == null) {
+            return null;
+        }
+
+        try {
+            JsonObject json = JsonParser.parseString(errorBody.string()).getAsJsonObject();
+            if (json.has("message") && !json.get("message").isJsonNull()) {
+                return json.get("message").getAsString();
+            }
+            for (String key : json.keySet()) {
+                if (!json.get(key).isJsonNull()) {
+                    return json.get(key).getAsString();
+                }
+            }
+        } catch (IOException | IllegalStateException ignored) {
+            return null;
+        }
+
+        return null;
+    }
 }

@@ -106,7 +106,7 @@
             <HBox alignment="CENTER_RIGHT" spacing="10.0">
                <children>
                   <Region HBox.hgrow="ALWAYS" />
-                  <Button mnemonicParsing="false" onAction="#create" text="Create auction"
+                  <Button fx:id="createButton" mnemonicParsing="false" onAction="#create" text="Create auction"
                           style="-fx-background-color: #1f6f43; -fx-text-fill: white; -fx-background-radius: 5; -fx-padding: 10 18;" />
                </children>
             </HBox>
