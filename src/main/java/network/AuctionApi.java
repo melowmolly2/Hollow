@@ -24,6 +24,8 @@ import dto.common.BaseResponse;
 import retrofit2.Call;
 import retrofit2.http.*;
 
+import java.util.List;
+
 public interface AuctionApi {
     @POST("/login")
     Call<AuthResponse> login(@Body LoginRequest request);
@@ -57,6 +59,9 @@ public interface AuctionApi {
 
     @GET("/item/status/{itemId}")
     Call<ItemStatusResponse> getItemStatus(@Path("itemId") Long itemId);
+
+    @GET("/item/status/all")
+    Call<List<ItemStatusResponse.ItemStatusData>> getAllItemStatuses();
 
     @GET("/users/me/balance")
     Call<BalanceResponse> getBalance(@Header("Authorization") String authorization);

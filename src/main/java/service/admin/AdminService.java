@@ -8,6 +8,7 @@ import dto.admin.UserListResponse;
 import dto.auction.GetItemPageResponse;
 import dto.auction.ItemListResponse;
 import dto.auction.ItemResponse;
+import dto.auction.ItemStatusResponse;
 import dto.common.BaseResponse;
 import model.TokenStorage;
 import network.ApiClient;
@@ -19,7 +20,9 @@ import service.auction.BaseResponseCallback;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class AdminService {
     public void banUser(String username, BaseResponseCallback callback) {
@@ -91,11 +94,7 @@ public class AdminService {
 
                     boolean lastPage = body.pages == null || body.pages.last || page + 1 >= body.pages.totalPages;
                     if (lastPage) {
-                        ItemListResponse listResponse = new ItemListResponse();
-                        listResponse.status = true;
-                        listResponse.message = "Successfully loaded active auctions";
-                        listResponse.items = items;
-                        callback.onSuccess(listResponse);
+                        completeItemsWithSellerFallback(items, callback);
                         return;
                     }
 
@@ -111,6 +110,51 @@ public class AdminService {
                 callback.onError("Network error: " + throwable.getMessage());
             }
         });
+    }
+
+    private void completeItemsWithSellerFallback(List<ItemResponse> items, ItemListCallback callback) {
+        if (items.stream().allMatch(item -> item.sellerUsername != null && !item.sellerUsername.isBlank())) {
+            callback.onSuccess(itemListResponse(items));
+            return;
+        }
+
+        ApiClient.api.getAllItemStatuses().enqueue(new Callback<>() {
+            @Override
+            public void onResponse(Call<List<ItemStatusResponse.ItemStatusData>> call,
+                                   Response<List<ItemStatusResponse.ItemStatusData>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    Map<Long, String> usernamesByItemId = new HashMap<>();
+                    for (ItemStatusResponse.ItemStatusData status : response.body()) {
+                        if (status != null && status.highestBidUser != null && !status.highestBidUser.isBlank()) {
+                            usernamesByItemId.put(status.id, status.highestBidUser);
+                        }
+                    }
+
+                    for (ItemResponse item : items) {
+                        if (item != null
+                                && item.itemId != null
+                                && (item.sellerUsername == null || item.sellerUsername.isBlank())) {
+                            item.sellerUsername = usernamesByItemId.get(item.itemId);
+                        }
+                    }
+                }
+
+                callback.onSuccess(itemListResponse(items));
+            }
+
+            @Override
+            public void onFailure(Call<List<ItemStatusResponse.ItemStatusData>> call, Throwable throwable) {
+                callback.onSuccess(itemListResponse(items));
+            }
+        });
+    }
+
+    private ItemListResponse itemListResponse(List<ItemResponse> items) {
+        ItemListResponse listResponse = new ItemListResponse();
+        listResponse.status = true;
+        listResponse.message = "Successfully loaded active auctions";
+        listResponse.items = items;
+        return listResponse;
     }
 
     private String requireAuthorization(BaseResponseCallback callback) {

@@ -7,7 +7,7 @@ public class ItemResponse {
     public Long itemId;
     public String title;
     public String description;
-    @SerializedName(value = "sellerUsername", alternate = {"seller_username", "username"})
+    @SerializedName(value = "sellerUsername", alternate = {"seller_username", "seller", "username"})
     public String sellerUsername;
     public UserResponse user;
 
