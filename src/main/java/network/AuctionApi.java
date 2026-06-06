@@ -37,13 +37,10 @@ public interface AuctionApi {
     Call<AuthResponse> refresh(@Body RefreshTokenRequest request);
 
     @POST("/logout")
-    Call<BaseResponse> logout(@Header("Authorization") String authorization);
+    Call<BaseResponse> logout();
 
     @POST("/items")
-    Call<BaseItemResponse> createItem(
-            @Header("Authorization") String authorization,
-            @Body PublishItemRequest request
-    );
+    Call<BaseItemResponse> createItem(@Body PublishItemRequest request);
 
     @GET("/items")
     Call<GetItemPageResponse> getItems(@Query("page") int page,
@@ -64,25 +61,16 @@ public interface AuctionApi {
     Call<List<ItemStatusResponse.ItemStatusData>> getAllItemStatuses();
 
     @GET("/users/me/balance")
-    Call<BalanceResponse> getBalance(@Header("Authorization") String authorization);
+    Call<BalanceResponse> getBalance();
 
     @POST("/users/me/deposit")
-    Call<BalanceResponse> deposit(
-            @Header("Authorization") String authorization,
-            @Body DepositRequest request
-    );
+    Call<BalanceResponse> deposit(@Body DepositRequest request);
 
     @POST("/bid")
-    Call<BidPostResponse> placeBid(
-            @Header("Authorization") String authorization,
-            @Body BidPostRequest request
-    );
+    Call<BidPostResponse> placeBid(@Body BidPostRequest request);
 
     @POST("/auto-bid")
-    Call<BaseResponse> autoBid(
-            @Header("Authorization") String authorization,
-            @Body AutoBidRequest request
-    );
+    Call<BaseResponse> autoBid(@Body AutoBidRequest request);
 
     @GET("/bids/{itemId}/bids")
     Call<BidHistoryResponse> getBidHistory(@Path("itemId") Long itemId,
@@ -93,31 +81,20 @@ public interface AuctionApi {
     Call<MyWinsResponse> getMyWins();
 
     @POST("/items/cancel/{itemId}")
-    Call<BaseResponse> cancelItem(@Header("Authorization") String authorization,
-                                  @Path("itemId") Long itemId);
+    Call<BaseResponse> cancelItem(@Path("itemId") Long itemId);
 
     @POST("/buy-now/{itemId}")
-    Call<BaseResponse> buyNow(@Header("Authorization") String authorization,
-                              @Path("itemId") Long itemId);
+    Call<BaseResponse> buyNow(@Path("itemId") Long itemId);
 
     @POST("/admin/ban")
-    Call<BaseResponse> banUser(
-            @Header("Authorization") String authorization,
-            @Body BanUserRequest request
-    );
+    Call<BaseResponse> banUser(@Body BanUserRequest request);
 
     @POST("/admin/unban")
-    Call<BaseResponse> unbanUser(
-            @Header("Authorization") String authorization,
-            @Body UnbanUserRequest request
-    );
+    Call<BaseResponse> unbanUser(@Body UnbanUserRequest request);
 
     @POST("/admin/cancel/{itemId}")
-    Call<BaseResponse> adminCancelItem(
-            @Header("Authorization") String authorization,
-            @Path("itemId") Long itemId
-    );
+    Call<BaseResponse> adminCancelItem(@Path("itemId") Long itemId);
 
     @GET("/admin/users")
-    Call<UserListResponse> getUsers(@Header("Authorization") String authorization);
+    Call<UserListResponse> getUsers();
 }

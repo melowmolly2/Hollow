@@ -19,15 +19,21 @@ public class AuthInterceptor implements Interceptor {
                 .removeHeader("Authorization");
 
         String authorization = TokenStorage.authorizationHeader();
-        if (authorization == null) {
-            return chain.proceed(requestBuilder.build());
+        if (authorization != null) {
+            requestBuilder.addHeader("Authorization", authorization);
         }
 
-        Request authenticatedRequest = requestBuilder
-                .addHeader("Authorization", authorization)
-                .build();
+        Response response = chain.proceed(requestBuilder.build());
 
-        return chain.proceed(authenticatedRequest);
+        if (response.code() == 498) {
+            Request retry = AuthAuthenticator.authenticate(response);
+            if (retry != null) {
+                response.close();
+                return chain.proceed(retry);
+            }
+        }
+
+        return response;
     }
 
     private boolean requiresAuthHandling(Request request) {

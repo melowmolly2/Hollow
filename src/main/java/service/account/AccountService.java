@@ -10,14 +10,12 @@ import retrofit2.Response;
 
 public class AccountService {
     public void getBalance(BalanceCallback callback) {
-        if (TokenStorage.accessToken == null || TokenStorage.accessToken.isBlank()) {
+        if (!TokenStorage.hasAccessToken()) {
             callback.onError("You must login first");
             return;
         }
 
-        String authorization = "Bearer " + TokenStorage.accessToken;
-
-        ApiClient.api.getBalance(authorization).enqueue(new Callback<BalanceResponse>() {
+        ApiClient.api.getBalance().enqueue(new Callback<BalanceResponse>() {
             @Override
             public void onResponse(Call<BalanceResponse> call, Response<BalanceResponse> response) {
                 if (response.isSuccessful() && response.body() != null) {
@@ -41,7 +39,7 @@ public class AccountService {
     }
 
     public void deposit(String amountText, BalanceCallback callback) {
-        if (TokenStorage.accessToken == null || TokenStorage.accessToken.isBlank()) {
+        if (!TokenStorage.hasAccessToken()) {
             callback.onError("You must login first");
             return;
         }
@@ -59,10 +57,9 @@ public class AccountService {
             return;
         }
 
-        String authorization = "Bearer " + TokenStorage.accessToken;
         DepositRequest request = new DepositRequest(amount);
 
-        ApiClient.api.deposit(authorization, request).enqueue(new Callback<BalanceResponse>() {
+        ApiClient.api.deposit(request).enqueue(new Callback<BalanceResponse>() {
             @Override
             public void onResponse(Call<BalanceResponse> call, Response<BalanceResponse> response) {
                 if (response.isSuccessful() && response.body() != null) {

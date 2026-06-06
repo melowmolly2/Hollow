@@ -43,7 +43,7 @@ public class ItemService {
     }
 
     public void cancelItem(Long itemId, BaseResponseCallback callback) {
-        if (TokenStorage.accessToken == null || TokenStorage.accessToken.isBlank()) {
+        if (!TokenStorage.hasAccessToken()) {
             callback.onError("You must login first");
             return;
         }
@@ -53,8 +53,7 @@ public class ItemService {
             return;
         }
 
-        String authorization = "Bearer " + TokenStorage.accessToken;
-        ApiClient.api.cancelItem(authorization, itemId).enqueue(new Callback<BaseResponse>() {
+        ApiClient.api.cancelItem(itemId).enqueue(new Callback<BaseResponse>() {
             @Override
             public void onResponse(Call<BaseResponse> call, Response<BaseResponse> response) {
                 if (response.isSuccessful() && response.body() != null) {
@@ -78,7 +77,7 @@ public class ItemService {
     }
 
     public void buyNow(Long itemId, BaseResponseCallback callback) {
-        if (TokenStorage.accessToken == null || TokenStorage.accessToken.isBlank()) {
+        if (!TokenStorage.hasAccessToken()) {
             callback.onError("You must login first");
             return;
         }
@@ -88,8 +87,7 @@ public class ItemService {
             return;
         }
 
-        String authorization = "Bearer " + TokenStorage.accessToken;
-        ApiClient.api.buyNow(authorization, itemId).enqueue(new Callback<BaseResponse>() {
+        ApiClient.api.buyNow(itemId).enqueue(new Callback<BaseResponse>() {
             @Override
             public void onResponse(Call<BaseResponse> call, Response<BaseResponse> response) {
                 if (response.isSuccessful() && response.body() != null) {
@@ -121,7 +119,7 @@ public class ItemService {
             String buyItNowPriceText,
             ItemCallback callback
     ) {
-        if (TokenStorage.accessToken == null || TokenStorage.accessToken.isBlank()) {
+        if (!TokenStorage.hasAccessToken()) {
             callback.onError("You must login first");
             return;
         }
@@ -171,9 +169,7 @@ public class ItemService {
                 bidIncrement
         );
 
-        String authorization = "Bearer " + TokenStorage.accessToken;
-
-        ApiClient.api.createItem(authorization, request).enqueue(new Callback<BaseItemResponse>() {
+        ApiClient.api.createItem(request).enqueue(new Callback<BaseItemResponse>() {
             @Override
             public void onResponse(Call<BaseItemResponse> call, Response<BaseItemResponse> response) {
                 if (response.isSuccessful() && response.body() != null) {
