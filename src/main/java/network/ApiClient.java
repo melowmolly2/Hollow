@@ -5,7 +5,7 @@ import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 public class ApiClient {
-    private static final String DEFAULT_BASE_URL = "http://26.106.51.93:8080/";
+    private static final String DEFAULT_BASE_URL = "http://localhost:8080/";
     public static final String BASE_URL = normalizeBaseUrl(resolveBaseUrl());
 
     private static final OkHttpClient PUBLIC_CLIENT = new OkHttpClient.Builder()

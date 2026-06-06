@@ -193,7 +193,7 @@ public class Card {
             BidderViewPage controller = loader.getController();
             controller.setItem(item);
 
-            SceneManager.changeContent(view);
+            SceneManager.changeContent(view, controller::dispose);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -207,7 +207,7 @@ public class Card {
             SellerViewPage controller = loader.getController();
             controller.setItem(item);
 
-            SceneManager.changeContent(view);
+            SceneManager.changeContent(view, controller::dispose);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

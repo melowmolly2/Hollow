@@ -82,6 +82,11 @@
                                       onAction="#confirmBid"
                                       text="Confirm"
                                       style="-fx-background-color: #1f6f43; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5; -fx-padding: 10 14;" />
+                              <Button fx:id="buyNowButton"
+                                      mnemonicParsing="false"
+                                      onAction="#buyItNow"
+                                      text="Buy It Now"
+                                      style="-fx-background-color: #b45309; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5; -fx-padding: 10 14;" />
                            </children>
                         </HBox>
                         <Label fx:id="lastBidLabel"
@@ -109,6 +114,7 @@
                         <Label fx:id="bidIncrementLabel" text="Bid increment" wrapText="true" style="-fx-text-fill: #4b5563;" GridPane.columnIndex="1" GridPane.rowIndex="0" />
                         <Label fx:id="startTimeLabel" text="Start time" wrapText="true" style="-fx-text-fill: #4b5563;" GridPane.columnIndex="2" GridPane.rowIndex="0" />
                         <Label fx:id="endTimeLabel" text="End time" wrapText="true" style="-fx-text-fill: #4b5563;" GridPane.columnIndex="3" GridPane.rowIndex="0" />
+                        <Label fx:id="buyNowPriceLabel" text="Buy it now price" wrapText="true" style="-fx-text-fill: #4b5563;" GridPane.columnIndex="0" GridPane.rowIndex="1" />
                      </children>
                   </GridPane>
                </children>
@@ -144,9 +150,11 @@
                         <Label text="Auto-bidding"
                                style="-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #111827;" />
                         <Label fx:id="autoBidStatusLabel"
-                               text="Autobid: disabled"
-                               wrapText="true"
-                               style="-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #6b7280;" />
+                                text="Last max bid: -"
+                                maxWidth="220.0"
+                                textOverrun="ELLIPSIS"
+                                wrapText="false"
+                                style="-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #6b7280;" />
                         <TextField fx:id="maxBidLimitField"
                                    promptText="Max bid limit"
                                    style="-fx-background-radius: 5; -fx-padding: 8 10;" />

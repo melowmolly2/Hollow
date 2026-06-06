@@ -162,7 +162,7 @@ public class BidService {
     }
 
     private boolean isAuthExpired(Response<?> response) {
-        return response.code() == 401 || response.code() == 403;
+        return response.code() == 401 || response.code() == 403 || response.code() == 498;
     }
 
     private String errorMessage(Response<?> response, String fallback) {

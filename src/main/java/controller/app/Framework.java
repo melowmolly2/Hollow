@@ -60,7 +60,7 @@ public class Framework {
 
             @Override
             public void onError(String message) {
-                AppPopup.error(message);
+                Platform.runLater(() -> AppPopup.error(message));
             }
         });
     }

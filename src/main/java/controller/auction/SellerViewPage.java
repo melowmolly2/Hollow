@@ -1,6 +1,7 @@
 package controller.auction;
 
 import controller.app.AppPopup;
+import controller.app.ContentLifecycle;
 import controller.app.SceneManager;
 import dto.auction.BidHistoryResponse;
 import dto.auction.ItemResponse;
@@ -26,7 +27,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SellerViewPage {
+public class SellerViewPage implements ContentLifecycle {
     @FXML private Label titleLabel;
     @FXML private Label statusLabel;
     @FXML private Label descriptionLabel;
@@ -47,11 +48,14 @@ public class SellerViewPage {
     private final BidService bidService = new BidService();
     private final PriceStreamListener priceStreamListener = new PriceStreamListener();
     private final DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+    private static final long BID_HISTORY_REFRESH_INTERVAL_MILLIS = 1_500L;
 
     private ItemResponse item;
     private ItemStatusResponse.ItemStatusData latestStatus;
     private final List<Double> observedBidAmounts = new ArrayList<>();
     private boolean bidHistorySeeded;
+    private boolean bidHistoryLoading;
+    private long lastBidHistoryRequestMillis;
     private Long observedEndTime;
     private boolean endPopupShown;
     private volatile boolean active;
@@ -70,6 +74,10 @@ public class SellerViewPage {
         active = true;
         observedEndTime = null;
         endPopupShown = false;
+        bidHistorySeeded = false;
+        bidHistoryLoading = false;
+        lastBidHistoryRequestMillis = 0L;
+        observedBidAmounts.clear();
         titleLabel.setText(valueOrNone(item.title));
         descriptionLabel.setText(valueOrNone(item.description));
         loadItemStatus();
@@ -78,10 +86,8 @@ public class SellerViewPage {
 
     @FXML
     public void back() throws IOException {
-        active = false;
         SceneManager.changeContent("/fxml/mySaleTab.fxml");
         SceneManager.selectMySaleNavigation();
-        stopPriceStreamAsync();
     }
 
     @FXML
@@ -148,12 +154,14 @@ public class SellerViewPage {
 
     private void loadBidHistory() {
         if (item == null || item.itemId == null) {
+            bidHistoryLoading = false;
             return;
         }
 
         bidService.getBidHistory(item.itemId, 0, 20, new BidHistoryCallback() {
             @Override
             public void onSuccess(BidHistoryResponse response) {
+                bidHistoryLoading = false;
                 Platform.runLater(() -> {
                     if (active) {
                         renderBidHistory(response);
@@ -163,6 +171,7 @@ public class SellerViewPage {
 
             @Override
             public void onError(String message) {
+                bidHistoryLoading = false;
                 Platform.runLater(() -> {
                     if (!active) {
                         return;
@@ -217,6 +226,20 @@ public class SellerViewPage {
 
         renderAntiSniping(status.endTime);
         renderEndedState(status);
+        requestBidHistory(!bidHistorySeeded);
+    }
+
+    private void requestBidHistory(boolean force) {
+        long now = System.currentTimeMillis();
+        if (bidHistoryLoading) {
+            return;
+        }
+        if (!force && now - lastBidHistoryRequestMillis < BID_HISTORY_REFRESH_INTERVAL_MILLIS) {
+            return;
+        }
+
+        bidHistoryLoading = true;
+        lastBidHistoryRequestMillis = now;
         loadBidHistory();
     }
 
@@ -376,6 +399,12 @@ public class SellerViewPage {
         Thread stopThread = new Thread(priceStreamListener::stop, "stop-seller-price-stream");
         stopThread.setDaemon(true);
         stopThread.start();
+    }
+
+    @Override
+    public void dispose() {
+        active = false;
+        stopPriceStreamAsync();
     }
 
 }

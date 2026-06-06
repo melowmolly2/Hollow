@@ -1,7 +1,9 @@
 package controller.auction;
 
 import controller.app.AppPopup;
+import controller.app.ContentLifecycle;
 import controller.app.SceneManager;
+import dto.account.BalanceResponse;
 import dto.auction.BidPostResponse;
 import dto.auction.ItemResponse;
 import dto.auction.ItemStatusResponse;
@@ -11,7 +13,10 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import model.AccountSession;
 import model.TokenStorage;
+import service.account.AccountService;
+import service.account.BalanceCallback;
 import service.auction.ItemService;
 import service.auction.ItemStatusCallback;
 import service.auction.BaseResponseCallback;
@@ -26,13 +31,14 @@ import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
 
-public class BidderViewPage {
+public class BidderViewPage implements ContentLifecycle {
     @FXML private Label titleLabel;
     @FXML private Label descriptionLabel;
     @FXML private Label currentPriceLabel;
     @FXML private Label highestBidderLabel;
     @FXML private Label startingPriceLabel;
     @FXML private Label bidIncrementLabel;
+    @FXML private Label buyNowPriceLabel;
     @FXML private Label startTimeLabel;
     @FXML private Label endTimeLabel;
     @FXML private Label minimumBidLabel;
@@ -42,12 +48,14 @@ public class BidderViewPage {
     @FXML private Label autoBidStatusLabel;
     @FXML private Button confirmBidButton;
     @FXML private Button autoBidButton;
+    @FXML private Button buyNowButton;
 
     private final ItemService itemService = new ItemService();
+    private final AccountService accountService = new AccountService();
     private final BidService bidService = new BidService();
     private final PriceStreamListener priceStreamListener = new PriceStreamListener();
     private final DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
-    private static final Map<Long, Double> lastBidByItem = new HashMap<>();
+    private static final Map<String, Double> lastBidByItemAndUser = new HashMap<>();
 
     private ItemResponse item;
     private volatile boolean active;
@@ -57,6 +65,7 @@ public class BidderViewPage {
     private boolean auctionEnded;
     private boolean bidSubmitting;
     private boolean autoBidSubmitting;
+    private boolean buyNowSubmitting;
 
     public void setItem(ItemResponse item) {
         this.item = item;
@@ -66,6 +75,7 @@ public class BidderViewPage {
         auctionEnded = false;
         bidSubmitting = false;
         autoBidSubmitting = false;
+        buyNowSubmitting = false;
         refreshBiddingControls();
         titleLabel.setText(item.title);
         descriptionLabel.setText(item.description);
@@ -76,8 +86,6 @@ public class BidderViewPage {
 
     @FXML
     public void back() throws IOException {
-        active = false;
-        priceStreamListener.stop();
         SceneManager.changeContent("/fxml/browseTab.fxml");
     }
 
@@ -99,11 +107,11 @@ public class BidderViewPage {
             @Override
             public void onSuccess(BidPostResponse response) {
                 Platform.runLater(() -> {
-                    bidSubmitting = false;
-                    refreshBiddingControls();
                     if (!active) {
                         return;
                     }
+                    bidSubmitting = false;
+                    refreshBiddingControls();
                     rememberLastBid(response);
                     renderLastBid();
                     bidAmountField.clear();
@@ -117,12 +125,13 @@ public class BidderViewPage {
             @Override
             public void onError(String message) {
                 Platform.runLater(() -> {
+                    if (!active) {
+                        return;
+                    }
                     bidSubmitting = false;
                     refreshBiddingControls();
-                    if (active) {
-                        handleAuthError(message);
-                        AppPopup.error(message);
-                    }
+                    handleAuthError(message);
+                    AppPopup.error(message);
                 });
             }
         });
@@ -146,12 +155,12 @@ public class BidderViewPage {
             @Override
             public void onSuccess(BaseResponse response) {
                 Platform.runLater(() -> {
-                    autoBidSubmitting = false;
-                    refreshBiddingControls();
                     if (!active) {
                         return;
                     }
-                    autoBidStatusLabel.setText("Autobid: enabled, max bid limit = " + formatMoney(maxBidLimit));
+                    autoBidSubmitting = false;
+                    refreshBiddingControls();
+                    autoBidStatusLabel.setText("Last max bid: " + formatMoney(maxBidLimit));
                     maxBidLimitField.clear();
                     AppPopup.info(response.message);
                 });
@@ -163,13 +172,65 @@ public class BidderViewPage {
             @Override
             public void onError(String message) {
                 Platform.runLater(() -> {
+                    if (!active) {
+                        return;
+                    }
                     autoBidSubmitting = false;
                     refreshBiddingControls();
-                    if (active) {
-                        handleAuthError(message);
-                        autoBidStatusLabel.setText("Autobid: disabled");
-                        AppPopup.error(message);
+                    handleAuthError(message);
+                    autoBidStatusLabel.setText("Last max bid: -");
+                    AppPopup.error(message);
+                });
+            }
+        });
+    }
+
+    @FXML
+    public void buyItNow() {
+        if (item == null || item.itemId == null) {
+            AppPopup.error("Missing item");
+            return;
+        }
+        if (latestStatus == null) {
+            AppPopup.error("Auction status is still loading");
+            return;
+        }
+        if (TokenStorage.accessToken == null || TokenStorage.accessToken.isBlank()) {
+            AppPopup.error("You must login first");
+            return;
+        }
+        if (safeMoney(latestStatus.buyItNowPrice) <= 0) {
+            AppPopup.error("Buy it now is unavailable for this auction");
+            return;
+        }
+
+        buyNowSubmitting = true;
+        refreshBiddingControls();
+        itemService.buyNow(item.itemId, new BaseResponseCallback() {
+            @Override
+            public void onSuccess(BaseResponse response) {
+                Platform.runLater(() -> {
+                    if (!active) {
+                        return;
                     }
+                    buyNowSubmitting = false;
+                    refreshBiddingControls();
+                    refreshBalance();
+                    AppPopup.info(response.message);
+                    loadItemStatus();
+                });
+            }
+
+            @Override
+            public void onError(String message) {
+                Platform.runLater(() -> {
+                    if (!active) {
+                        return;
+                    }
+                    buyNowSubmitting = false;
+                    refreshBiddingControls();
+                    handleAuthError(message);
+                    AppPopup.error(message);
                 });
             }
         });
@@ -192,9 +253,11 @@ public class BidderViewPage {
 
             @Override
             public void onError(String message) {
-                if (active) {
-                    AppPopup.error(message);
-                }
+                Platform.runLater(() -> {
+                    if (active) {
+                        AppPopup.error(message);
+                    }
+                });
             }
         });
     }
@@ -213,6 +276,13 @@ public class BidderViewPage {
         });
     }
 
+    private void stopPriceStreamAsync() {
+        Thread stopper = new Thread(priceStreamListener::stop);
+        stopper.setDaemon(true);
+        stopper.setName("price-stream-stop");
+        stopper.start();
+    }
+
     private void renderStatus(ItemStatusResponse.ItemStatusData status) {
         if (status == null) {
             return;
@@ -224,6 +294,7 @@ public class BidderViewPage {
         highestBidderLabel.setText("Highest bidder: " + valueOrNone(status.highestBidUser));
         startingPriceLabel.setText("Starting price: " + formatMoney(status.startingPrice));
         bidIncrementLabel.setText("Bid increment: " + formatMoney(status.bidIncrement));
+        buyNowPriceLabel.setText("Buy it now price: " + formatMoney(status.buyItNowPrice));
         startTimeLabel.setText("Start time: " + formatTime(status.startTime));
         endTimeLabel.setText("End time: " + formatTime(status.endTime));
 
@@ -274,6 +345,12 @@ public class BidderViewPage {
         bidAmountField.setDisable(auctionEnded || bidSubmitting);
         confirmBidButton.setDisable(auctionEnded || bidSubmitting);
         confirmBidButton.setText(bidSubmitting ? "Submitting..." : "Confirm");
+        boolean buyNowUnavailable = latestStatus == null
+                || TokenStorage.accessToken == null
+                || TokenStorage.accessToken.isBlank()
+                || safeMoney(latestStatus.buyItNowPrice) <= 0;
+        buyNowButton.setDisable(auctionEnded || buyNowSubmitting || buyNowUnavailable);
+        buyNowButton.setText(buyNowSubmitting ? "Buying..." : "Buy It Now");
 
         maxBidLimitField.setDisable(auctionEnded || autoBidSubmitting);
         autoBidButton.setDisable(auctionEnded || autoBidSubmitting);
@@ -351,6 +428,24 @@ public class BidderViewPage {
         }
     }
 
+    private void refreshBalance() {
+        accountService.getBalance(new BalanceCallback() {
+            @Override
+            public void onSuccess(BalanceResponse response) {
+                Platform.runLater(() -> AccountSession.setBalance(response.balance));
+            }
+
+            @Override
+            public void onError(String message) {
+                Platform.runLater(() -> {
+                    if (active) {
+                        handleAuthError(message);
+                    }
+                });
+            }
+        });
+    }
+
     private double minimumBid(ItemStatusResponse.ItemStatusData status) {
         double currentPrice = safeMoney(status.currentPrice);
         double startingPrice = safeMoney(status.startingPrice);
@@ -382,7 +477,7 @@ public class BidderViewPage {
             return;
         }
 
-        lastBidByItem.put(item.itemId, response.bid.bidAmount);
+        lastBidByItemAndUser.put(lastBidKey(), response.bid.bidAmount);
     }
 
     private void renderLastBid() {
@@ -390,8 +485,18 @@ public class BidderViewPage {
             return;
         }
 
-        Double lastBid = lastBidByItem.get(item.itemId);
+        Double lastBid = lastBidByItemAndUser.get(lastBidKey());
         lastBidLabel.setText(lastBid == null ? "Your last bid: None" : "Your last bid: " + formatMoney(lastBid));
+    }
+
+    private String lastBidKey() {
+        return valueOrNone(TokenStorage.username) + ":" + item.itemId;
+    }
+
+    @Override
+    public void dispose() {
+        active = false;
+        stopPriceStreamAsync();
     }
 
     private double safeMoney(Double value) {

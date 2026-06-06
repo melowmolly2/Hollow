@@ -96,6 +96,10 @@ public interface AuctionApi {
     Call<BaseResponse> cancelItem(@Header("Authorization") String authorization,
                                   @Path("itemId") Long itemId);
 
+    @POST("/buy-now/{itemId}")
+    Call<BaseResponse> buyNow(@Header("Authorization") String authorization,
+                              @Path("itemId") Long itemId);
+
     @POST("/admin/ban")
     Call<BaseResponse> banUser(
             @Header("Authorization") String authorization,

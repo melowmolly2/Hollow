@@ -14,6 +14,7 @@ import java.util.Objects;
 public class SceneManager  {
     private static StackPane contentArea;
     private static Runnable mySaleNavigationSelector;
+    private static Runnable contentCleanup;
 
     public static void changeScene(ActionEvent event, String fxml) throws IOException {
         Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
@@ -21,6 +22,7 @@ public class SceneManager  {
         Scene currentScene = stage.getScene();
         Scene scene = new Scene(loader.load(), currentScene.getWidth(), currentScene.getHeight());
 
+        disposeCurrentContent();
         stage.setScene(scene);
         stage.show();
     }
@@ -44,15 +46,34 @@ public class SceneManager  {
             throw new IllegalStateException("Content area has not been initialized");
         }
 
-        Parent view = FXMLLoader.load(Objects.requireNonNull(SceneManager.class.getResource(fxml)));
-        changeContent(view);
+        FXMLLoader loader = new FXMLLoader(Objects.requireNonNull(SceneManager.class.getResource(fxml)));
+        Parent view = loader.load();
+        Object controller = loader.getController();
+        Runnable cleanup = controller instanceof ContentLifecycle lifecycle ? lifecycle::dispose : null;
+        changeContent(view, cleanup);
     }
 
     public static void changeContent(Parent view) {
+        changeContent(view, null);
+    }
+
+    public static void changeContent(Parent view, Runnable cleanup) {
         if (contentArea == null) {
             throw new IllegalStateException("Content area has not been initialized");
         }
 
+        disposeCurrentContent();
         contentArea.getChildren().setAll(view);
+        contentCleanup = cleanup;
+    }
+
+    private static void disposeCurrentContent() {
+        if (contentCleanup == null) {
+            return;
+        }
+
+        Runnable cleanup = contentCleanup;
+        contentCleanup = null;
+        cleanup.run();
     }
 }

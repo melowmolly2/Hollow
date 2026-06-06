@@ -1,5 +1,7 @@
 package service.auction;
 
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import dto.auction.PublishItemRequest;
 import dto.auction.BaseItemResponse;
 import dto.auction.GetItemPageResponse;
@@ -8,9 +10,12 @@ import dto.auction.SellerListingResponse;
 import dto.common.BaseResponse;
 import network.ApiClient;
 import model.TokenStorage;
+import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
+
+import java.io.IOException;
 
 public class ItemService {
     public void getSellerListings(String username, int page, int size, SellerListingCallback callback) {
@@ -27,7 +32,7 @@ public class ItemService {
                     return;
                 }
 
-                callback.onError("Get seller listings failed. HTTP code: " + response.code());
+                callback.onError(errorMessage(response, "Get seller listings failed"));
             }
 
             @Override
@@ -62,7 +67,42 @@ public class ItemService {
                     return;
                 }
 
-                callback.onError("Cancel item failed. HTTP code: " + response.code());
+                callback.onError(errorMessage(response, "Cancel item failed"));
+            }
+
+            @Override
+            public void onFailure(Call<BaseResponse> call, Throwable throwable) {
+                callback.onError("Network error: " + throwable.getMessage());
+            }
+        });
+    }
+
+    public void buyNow(Long itemId, BaseResponseCallback callback) {
+        if (TokenStorage.accessToken == null || TokenStorage.accessToken.isBlank()) {
+            callback.onError("You must login first");
+            return;
+        }
+
+        if (itemId == null) {
+            callback.onError("Missing item id");
+            return;
+        }
+
+        String authorization = "Bearer " + TokenStorage.accessToken;
+        ApiClient.api.buyNow(authorization, itemId).enqueue(new Callback<BaseResponse>() {
+            @Override
+            public void onResponse(Call<BaseResponse> call, Response<BaseResponse> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    callback.onSuccess(response.body());
+                    return;
+                }
+
+                if (isAuthExpired(response)) {
+                    callback.onError("Session expired. Please login again.");
+                    return;
+                }
+
+                callback.onError(errorMessage(response, "Buy it now failed"));
             }
 
             @Override
@@ -146,7 +186,7 @@ public class ItemService {
                     return;
                 }
 
-                callback.onError("Create item failed. HTTP code: " + response.code());
+                callback.onError(errorMessage(response, "Create item failed"));
             }
 
             @Override
@@ -157,7 +197,7 @@ public class ItemService {
     }
 
     private boolean isAuthExpired(Response<?> response) {
-        return response.code() == 401 || response.code() == 403;
+        return response.code() == 401 || response.code() == 403 || response.code() == 498;
     }
 
     public void getItems(int page, int size, ItemPageCallback callback) {
@@ -169,7 +209,7 @@ public class ItemService {
                     return;
                 }
 
-                callback.onError("Get items failed. HTTP code: " + response.code());
+                callback.onError(errorMessage(response, "Get items failed"));
             }
 
             @Override
@@ -193,7 +233,7 @@ public class ItemService {
                     return;
                 }
 
-                callback.onError("Get item status failed. HTTP code: " + response.code());
+                callback.onError(errorMessage(response, "Get item status failed"));
             }
 
             @Override
@@ -201,5 +241,31 @@ public class ItemService {
                 callback.onError("Network error: " + throwable.getMessage());
             }
         });
+    }
+
+    private String errorMessage(Response<?> response, String fallback) {
+        String message = readMessage(response.errorBody());
+        if (message != null && !message.isBlank()) {
+            return message;
+        }
+
+        return fallback + ". HTTP code: " + response.code();
+    }
+
+    private String readMessage(ResponseBody errorBody) {
+        if (errorBody == null) {
+            return null;
+        }
+
+        try {
+            JsonObject json = JsonParser.parseString(errorBody.string()).getAsJsonObject();
+            if (json.has("message") && !json.get("message").isJsonNull()) {
+                return json.get("message").getAsString();
+            }
+        } catch (IOException | IllegalStateException ignored) {
+            return null;
+        }
+
+        return null;
     }
 }

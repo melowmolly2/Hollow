@@ -83,7 +83,7 @@ public class AccountPage {
 
             @Override
             public void onError(String message) {
-                AppPopup.error(message);
+                Platform.runLater(() -> AppPopup.error(message));
             }
         });
     }
@@ -97,7 +97,7 @@ public class AccountPage {
 
             @Override
             public void onError(String message) {
-                AppPopup.error(message);
+                Platform.runLater(() -> AppPopup.error(message));
             }
         });
     }
