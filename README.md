@@ -1,5 +1,13 @@
 # Ứng dụng Đấu giá Trực tuyến (Hollow)
+
+![Java](https://img.shields.io/badge/Java-21-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white)
+![JavaFX](https://img.shields.io/badge/JavaFX-21.0.2-blue?style=for-the-badge&logo=openjfx&logoColor=white)
+![Maven](https://img.shields.io/badge/Maven-3.11.0-C71A36?style=for-the-badge&logo=apache-maven&logoColor=white)
+![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20macOS-lightgrey?style=for-the-badge)
+![Status](https://img.shields.io/badge/status-active-success.svg?style=for-the-badge)
+
 ![](assets/banner.png)
+
 ## 1. Mô tả bài toán và phạm vi hệ thống
 Hollow là một ứng dụng Desktop (JavaFX) mô phỏng một hệ thống đấu giá trực tuyến. Hệ thống cho phép người dùng đăng ký, đăng nhập, duyệt các phiên đấu giá đang diễn ra, đặt giá cho các vật phẩm, và theo dõi trạng thái đấu giá theo thời gian thực. Ngoài ra, người dùng cũng có thể đóng vai trò là người bán để tạo các phiên đấu giá mới và quản lý các vật phẩm mình đang bán. Phạm vi hệ thống bao gồm một ứng dụng Client (JavaFX) giao tiếp với một máy chủ Server (backend cung cấp REST API).
 
