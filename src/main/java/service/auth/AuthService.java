@@ -17,8 +17,6 @@ import java.io.IOException;
 
 public class AuthService {
     public void logout(LogoutCallback callback) {
-        TokenRefreshManager.stop();
-
         if (!TokenStorage.hasAccessToken() && !TokenStorage.hasRefreshToken()) {
             TokenStorage.clear();
             callback.onSuccess("Logged out.");
@@ -65,7 +63,6 @@ public class AuthService {
                 if (response.isSuccessful() && response.body() != null) {
                     AuthResponse auth = response.body();
                     TokenStorage.setSession(username, auth);
-                    TokenRefreshManager.start();
                     callback.onSuccess(auth);
                     return;
                 }

@@ -3,19 +3,18 @@ package network;
 import dto.auth.AuthResponse;
 import dto.auth.RefreshTokenRequest;
 import model.TokenStorage;
-import okhttp3.Authenticator;
 import okhttp3.Request;
 import okhttp3.Response;
-import okhttp3.Route;
-import service.auth.TokenRefreshManager;
 import retrofit2.Call;
 
 import java.io.IOException;
 
-public class AuthAuthenticator implements Authenticator {
+public class AuthAuthenticator {
 
-    @Override
-    public Request authenticate(Route route, Response response) throws IOException {
+    private AuthAuthenticator() {
+    }
+
+    public static Request authenticate(Response response) throws IOException {
         if (response.code() != 498) {
             return null;
         }
@@ -23,14 +22,12 @@ public class AuthAuthenticator implements Authenticator {
         synchronized (TokenStorage.class) {
             if (!TokenStorage.hasRefreshToken()) {
                 TokenStorage.clear();
-                TokenRefreshManager.stop();
                 return null;
             }
 
             String currentRefreshToken = TokenStorage.getRefreshToken();
             if (currentRefreshToken == null || currentRefreshToken.isBlank()) {
                 TokenStorage.clear();
-                TokenRefreshManager.stop();
                 return null;
             }
 
@@ -41,12 +38,10 @@ public class AuthAuthenticator implements Authenticator {
 
                 if (refreshResponse.isSuccessful() && refreshResponse.body() != null) {
                     TokenStorage.setTokens(refreshResponse.body());
-                    TokenRefreshManager.start();
 
                     String newAuthorization = TokenStorage.authorizationHeader();
                     if (newAuthorization == null) {
                         TokenStorage.clear();
-                        TokenRefreshManager.stop();
                         return null;
                     }
 
@@ -57,11 +52,9 @@ public class AuthAuthenticator implements Authenticator {
                 }
 
                 TokenStorage.clear();
-                TokenRefreshManager.stop();
                 return null;
             } catch (IOException e) {
                 TokenStorage.clear();
-                TokenRefreshManager.stop();
                 return null;
             }
         }
