@@ -26,41 +26,37 @@ import java.util.Map;
 
 public class AdminService {
     public void banUser(String username, BaseResponseCallback callback) {
-        String authorization = requireAuthorization(callback);
-        if (authorization == null) {
+        if (!requireAuthorization(callback)) {
             return;
         }
 
-        ApiClient.api.banUser(authorization, new BanUserRequest(username)).enqueue(baseCallback(callback, "Ban user failed"));
+        ApiClient.api.banUser(new BanUserRequest(username)).enqueue(baseCallback(callback, "Ban user failed"));
     }
 
     public void unbanUser(String username, String password, BaseResponseCallback callback) {
-        String authorization = requireAuthorization(callback);
-        if (authorization == null) {
+        if (!requireAuthorization(callback)) {
             return;
         }
 
-        ApiClient.api.unbanUser(authorization, new UnbanUserRequest(username, password))
+        ApiClient.api.unbanUser(new UnbanUserRequest(username, password))
                 .enqueue(baseCallback(callback, "Unban user failed"));
     }
 
     public void endAuction(Long itemId, BaseResponseCallback callback) {
-        String authorization = requireAuthorization(callback);
-        if (authorization == null) {
+        if (!requireAuthorization(callback)) {
             return;
         }
 
-        ApiClient.api.adminCancelItem(authorization, itemId).enqueue(baseCallback(callback, "End auction failed"));
+        ApiClient.api.adminCancelItem(itemId).enqueue(baseCallback(callback, "End auction failed"));
     }
 
     public void getUsers(UserListCallback callback) {
-        String authorization = TokenStorage.authorizationHeader();
-        if (authorization == null) {
+        if (!TokenStorage.hasAccessToken()) {
             callback.onError("You must login first");
             return;
         }
 
-        ApiClient.api.getUsers(authorization).enqueue(new Callback<>() {
+        ApiClient.api.getUsers().enqueue(new Callback<>() {
             @Override
             public void onResponse(Call<UserListResponse> call, Response<UserListResponse> response) {
                 if (response.isSuccessful() && response.body() != null) {
@@ -157,13 +153,12 @@ public class AdminService {
         return listResponse;
     }
 
-    private String requireAuthorization(BaseResponseCallback callback) {
-        String authorization = TokenStorage.authorizationHeader();
-        if (authorization == null) {
+    private boolean requireAuthorization(BaseResponseCallback callback) {
+        if (!TokenStorage.hasAccessToken()) {
             callback.onError("You must login first");
-            return null;
+            return false;
         }
-        return authorization;
+        return true;
     }
 
     private Callback<BaseResponse> baseCallback(BaseResponseCallback callback, String fallback) {

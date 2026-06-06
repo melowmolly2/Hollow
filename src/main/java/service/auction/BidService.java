@@ -62,7 +62,7 @@ public class BidService {
     }
 
     public void placeBid(Long itemId, String bidAmountText, BidCallback callback) {
-        if (TokenStorage.accessToken == null || TokenStorage.accessToken.isBlank()) {
+        if (!TokenStorage.hasAccessToken()) {
             callback.onError("You must login first");
             return;
         }
@@ -85,10 +85,9 @@ public class BidService {
             return;
         }
 
-        String authorization = "Bearer " + TokenStorage.accessToken;
         BidPostRequest request = new BidPostRequest(itemId, bidAmount);
 
-        ApiClient.api.placeBid(authorization, request).enqueue(new Callback<BidPostResponse>() {
+        ApiClient.api.placeBid(request).enqueue(new Callback<BidPostResponse>() {
             @Override
             public void onResponse(Call<BidPostResponse> call, Response<BidPostResponse> response) {
                 if (response.isSuccessful() && response.body() != null) {
@@ -112,7 +111,7 @@ public class BidService {
     }
 
     public void autoBid(Long itemId, String maxBidLimitText, BaseResponseCallback callback) {
-        if (TokenStorage.accessToken == null || TokenStorage.accessToken.isBlank()) {
+        if (!TokenStorage.hasAccessToken()) {
             callback.onError("You must login first");
             return;
         }
@@ -135,10 +134,9 @@ public class BidService {
             return;
         }
 
-        String authorization = "Bearer " + TokenStorage.accessToken;
         AutoBidRequest request = new AutoBidRequest(itemId, maxBidLimit);
 
-        ApiClient.api.autoBid(authorization, request).enqueue(new Callback<BaseResponse>() {
+        ApiClient.api.autoBid(request).enqueue(new Callback<BaseResponse>() {
             @Override
             public void onResponse(Call<BaseResponse> call, Response<BaseResponse> response) {
                 if (response.isSuccessful() && response.body() != null) {

@@ -195,7 +195,7 @@ public class BidderViewPage implements ContentLifecycle {
             AppPopup.error("Auction status is still loading");
             return;
         }
-        if (TokenStorage.accessToken == null || TokenStorage.accessToken.isBlank()) {
+        if (!TokenStorage.hasAccessToken()) {
             AppPopup.error("You must login first");
             return;
         }
@@ -346,8 +346,7 @@ public class BidderViewPage implements ContentLifecycle {
         confirmBidButton.setDisable(auctionEnded || bidSubmitting);
         confirmBidButton.setText(bidSubmitting ? "Submitting..." : "Confirm");
         boolean buyNowUnavailable = latestStatus == null
-                || TokenStorage.accessToken == null
-                || TokenStorage.accessToken.isBlank()
+                || !TokenStorage.hasAccessToken()
                 || safeMoney(latestStatus.buyItNowPrice) <= 0;
         buyNowButton.setDisable(auctionEnded || buyNowSubmitting || buyNowUnavailable);
         buyNowButton.setText(buyNowSubmitting ? "Buying..." : "Buy It Now");

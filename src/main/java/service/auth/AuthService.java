@@ -17,15 +17,15 @@ import java.io.IOException;
 
 public class AuthService {
     public void logout(LogoutCallback callback) {
-        String authorization = TokenStorage.authorizationHeader();
         TokenRefreshManager.stop();
-        if (authorization == null && !TokenStorage.hasRefreshToken()) {
+
+        if (!TokenStorage.hasAccessToken() && !TokenStorage.hasRefreshToken()) {
             TokenStorage.clear();
             callback.onSuccess("Logged out.");
             return;
         }
 
-        ApiClient.api.logout(authorization).enqueue(new Callback<BaseResponse>() {
+        ApiClient.api.logout().enqueue(new Callback<BaseResponse>() {
             @Override
             public void onResponse(Call<BaseResponse> call, Response<BaseResponse> response) {
                 if (response.isSuccessful() && response.body() != null) {
